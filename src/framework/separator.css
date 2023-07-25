@@ -1,0 +1,4 @@
+.separator {
+    max-width: calc(min(100vw - 40px, 800px));
+    margin: 0px auto;
+}

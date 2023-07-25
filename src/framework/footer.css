@@ -1,0 +1,58 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+
+
+/* footers */
+footer {
+    display: flex;
+    flex-direction: column;
+
+    margin-left: auto;
+    margin-right: auto;
+    height: 200px;
+
+    justify-content: flex-end;
+    align-content: center;
+}
+
+footer hr {
+    width: max(calc(100vw - 300px), 75%);
+    margin-bottom: 40px;
+}
+
+footer > #footer-icons {
+    display: flex;
+
+    justify-content: center;
+}
+
+footer .footer-icon svg {
+    fill: var(--accent2) !important;
+    margin: -10px 4px;
+
+    transition: fill 0.3s;
+}
+
+footer .footer-icon:hover svg {
+    fill: var(--text) !important;
+}
+
+/* Copyright header */
+footer > p {
+    font-family: var(--light);
+    font-size: 12px;
+    text-align: center;
+    color:   var(--text);
+    backdrop-filter: blur(1px);
+
+    margin-bottom: 40px;
+}
+
+footer a {
+    color: var(--accent2);
+    text-decoration: underline;
+}

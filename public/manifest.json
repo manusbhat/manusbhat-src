@@ -1,0 +1,11 @@
+{
+  "short_name": "Manu Bhat",
+  "name": "Manu Bhat's Personal Portfolio",
+  "icons": [
+    
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#242e40",
+  "background_color": "#242e40"
+}

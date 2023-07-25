@@ -1,0 +1,20 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+
+ #extracurriculars {
+     height: 600vh;
+ }
+
+ #extracurriculars p {
+     width: 100vw;
+     height: 50vh;
+
+     background-color: blue;
+     text-align: center;
+ }
+
+ 

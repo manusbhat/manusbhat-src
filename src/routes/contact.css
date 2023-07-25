@@ -1,0 +1,153 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+
+#contact-wrapper {
+    display: flex;
+    justify-content: center;
+
+    height: 100vh;
+}
+
+#contact-page {
+     width: 700px;
+     height: 500px;
+
+     display: flex;
+     justify-content: center;
+ }
+
+ #contact-paragraph {
+    display: inline-block;
+ }
+
+ /* label */
+ #contact-paragraph p {
+    font-family: 'Rubik';
+    color: #333333;
+
+    font-size: 22px;
+    width: 300px;
+
+    padding: 15px;
+    background-color: #CCCCCC;
+    border-radius: 20px;
+
+    align-self: flex-start;
+ }
+
+ #contact-paragraph p a {
+    color: var(--link);
+ }
+
+ /* Actual graph */
+#contact-graph, #contact-mobile-graph  {
+    justify-self: flex-end;
+    align-self: flex-end;
+
+    width: 350px;
+    height: 350px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}  
+
+#contact-mobile-graph {
+    display: none;
+}
+
+.contact-label {
+    width: 175px;
+    height: 175px;
+    border-radius: 50%;
+    background-color: #CCCCCC;
+
+    box-shadow: 0 0 0px 0px #000000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+}
+
+#contact-graph p, #contact-mobile-graph p {
+    font-family: var(--bold);
+    font-size: 35px;
+
+    text-align: center;
+    display: block;
+}
+
+.contact-media-icon {
+    position: absolute;
+    pointer-events: none;
+
+    left: 50%;
+    bottom: 50%;
+}
+
+.contact-media-icon a {
+    pointer-events: all;
+
+    width: 80px;
+    height: 80px;
+}
+
+.contact-media-icon svg, .contact-media-icon img {
+    border-radius: 50%;
+
+    background-color: var(--accent2);
+
+    transition: all 0.4s;
+}
+
+.contact-media-icon svg:hover, .contact-media-icon img:hover {
+    transform: scale(1.05);
+
+    box-shadow: 0px 0px 10px #000000;
+}
+
+.contact-connector {
+    position: absolute;
+
+    left: 50%;
+    bottom: 50%;
+    border-radius: 50%;
+
+    background-color: var(--text);
+}
+
+@media screen and (max-width: 775px) {
+    #contact-page {
+        height: 650px;
+
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    #contact-paragraph p {
+        align-self: flex-start;
+        justify-self: center;
+    }
+
+    #contact-graph {
+        display: none;
+    }
+
+    #contact-mobile-graph {
+        display: flex;
+        margin-top: 20px;
+
+        transform: scale(0.9);
+
+        align-self: center;
+        justify-self: center;
+    }
+
+    /* Show the sub button */
+}
