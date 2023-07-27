@@ -37,7 +37,8 @@ export default function Formal() {
                     duration="2022-Present"
                 >
                     Working on a model that uses minimal-cost bipartite matching 
-                    to predict the distribution of future states of a chaotic system (e.g. fluid flow). Expecting to finish something this summer.
+                    to predict the distribution of future states of a chaotic system (e.g. fluid flow). 
+                    Expecting to finish sometime this summer.
                 </Subrole>
 
             </Role>

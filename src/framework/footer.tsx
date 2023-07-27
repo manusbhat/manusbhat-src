@@ -49,7 +49,7 @@ function Footer() {
             </div>
 
             <p>
-                Last updated <span id="git-last-commit-date">July 24, 2023</span>. Copyright © Manu Bhat 2022-{new Date().getFullYear()}. All rights reserved.
+                Last updated <span id="git-last-commit-date">July 25, 2023</span>. Copyright © Manu Bhat 2022-{new Date().getFullYear()}. All rights reserved.
                 <br/>
 
                 <a href="https://github.com/manusbhat/manusbhat-react"
