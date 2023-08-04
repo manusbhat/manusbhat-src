@@ -1,0 +1,35 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+
+
+/* footers */
+footer {
+    display: flex;
+    flex-direction: column;
+
+    margin: 0px auto;
+    padding: 0px 10px;
+    height: 200px;
+
+    justify-content: flex-end;
+    align-content: center;
+}
+
+footer hr {
+    width: max(calc(100vw - 300px), 85%);
+    margin-bottom: 20px;
+}
+
+/* Copyright header */
+footer > p {
+    font-family: var(--light);
+    font-size: 12px;
+    text-align: center;
+    color:   var(--text);
+    backdrop-filter: blur(1px);
+    margin: 0px auto 40px;
+}

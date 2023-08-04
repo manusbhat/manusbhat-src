@@ -1,0 +1,217 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+ 
+#navbar {
+    position: fixed;
+    width: 100vw;
+    height: 65px;
+
+    top: 0;
+    left: 0;
+
+    display: flex;
+
+    justify-content: flex-end;
+    align-items: flex-start;
+
+    z-index: 1;
+
+    background: rgba(51, 51, 51, 0.8);
+
+    backdrop-filter: blur(12px);
+    border-bottom: ridge 0.25px #888888;
+    box-shadow: 0px 2px 35px -4px #000000;
+
+    transition: height 0.5s;
+}
+
+#navbar-main {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    
+    margin: 0 150px;
+
+    flex-grow: 1;
+}
+
+/* Title */
+#navbar-main > a {
+    font-family: var(--serif);
+    font-size: 40px;
+    color: #EEEEFF;
+
+    text-align: center;
+    text-decoration: none;
+
+    margin-top: 5px;
+
+    flex-grow: 1;
+}
+
+#nav-buttons {
+    margin: 10px 0 0 0;
+}
+
+#navbar ul {
+    list-style: none;
+    padding-inline-start: 0px;
+}
+#nav-buttons {
+    display: inline;
+}
+#nav-buttons li {
+    display: inline-block;
+    position: relative;
+}
+/* second order are vertical */
+#nav-buttons ul li {
+    display: block;
+}
+
+/* add in the separators */
+#nav-buttons > li > .nav-button-link {
+    border-right: solid 2px var(--accent);
+    margin: 7px 0;
+}
+
+#nav-buttons > li:last-child > .nav-button-link {
+    border-right: solid 0px var(--accent);
+} 
+
+/* First or second order nav button */
+.nav-button-link {
+    font-size: 14px;
+    text-decoration: none;
+    text-align: center;
+    font-family: var(--light);
+    color: white; /* force white */
+
+    cursor: pointer;
+    display: block;
+
+    margin: 0;
+    flex-grow: 1;
+    padding: 6px 7px;
+}
+
+.nav-button-link:visited {
+    color: var(--text);
+}
+
+.active-link {
+    color: var(--link) !important;
+}
+
+/* Dropdowns */
+.nav-dropdown {
+    position: absolute;
+
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    --extra-padding: 20px;
+    width: calc(100% + var(--extra-padding));
+    min-width: fit-content;
+
+    left: 50%;
+    transform: translateX(-50%);
+
+    border: solid 2px var(--accent);
+    border-radius: 5px;
+    background: rgba(51, 51, 51, 0.5);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+
+    pointer-events: none;
+   
+    transition: all 0.5s;
+    transition-delay: 0.7s;
+}
+/* Does not appear to work, see if there's other ways
+.nav-button-span:hover ~ .nav-button-span > .nav-dropdown {
+    transition-delay: 0 !important;
+} */
+
+.nav-button-span:hover .nav-dropdown {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.nav-dropdown:hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* expansion */
+#navbar-expand-button {
+    display: none;
+
+    border-radius: 5px;
+    border: solid #888888;
+
+    cursor: pointer;
+    margin: 12px 10px 12px 0px;
+
+    width: 40px;
+    height: 40px;
+}
+
+
+/* Make sure navbar is not cut off */
+main {
+    margin-top: 100px;
+}
+
+@media screen and (max-width: 950px) {
+    #navbar-main {
+        margin: 0 10px;
+    }
+    #navbar {
+        overflow: hidden;
+    }
+
+    .navbar-expanded {
+        /* does not interpolate well, so hard coding is better ig */
+        /* height: fit-content !important; */
+        height: 180px !important;
+    }
+
+    #nav-buttons {
+        margin: 0 0 0 5px;
+    }
+
+    #navbar-expand-button {
+        display: inline-block;
+    }
+
+    #navbar-main {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .nav-dropdown {
+        display: none;
+    }
+
+    #nav-buttons li {
+        display: block;
+    }
+
+    #nav-buttons > li > .nav-button-link {
+        border-right: none;
+        border-bottom: solid 2px var(--accent);
+        margin: 7px 0;
+    }
+
+    #nav-buttons > li:last-child > .nav-button-link {
+        border-bottom: solid 0px var(--accent);
+    } 
+}

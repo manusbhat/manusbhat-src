@@ -1,0 +1,80 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+
+#status {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+
+    width: min(90vw, 800px);
+    margin: 40px auto;
+    position: relative;
+}
+
+#index-nginx {
+    grid-column: 2 / span 2;
+    justify-content: center;
+    aspect-ratio: 2;
+}
+
+.index-status {
+    display: flex;
+    flex-direction: column;
+}
+
+.index-status-img-holder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.index-status img {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    justify-self: flex-end;
+}
+
+/* connector */
+.index-status svg {
+    position: absolute;
+    z-index: -4;
+}
+
+.index-status-title {
+    font-family: var(--bold);
+    color: white;
+    text-align: center;
+    margin: 5px 0px 0px;
+}
+
+.index-status-subtitle {
+    font-family: var(--light);
+    color: var(--ui1);
+    text-align: center;
+    margin: 0px;
+}
+
+.index-status-subtitle strong {
+    font-family: var(--bold);
+}
+.index-status-loading {
+    color: var(--status-loading);
+}
+.index-status-ok {
+    color: var(--status-ok);
+}
+.index-status-err {
+    color: var(--status-err);
+}
+
+@media screen and (max-width: 550px) {
+    .index-status {
+        font-size: 10px;
+    }
+}

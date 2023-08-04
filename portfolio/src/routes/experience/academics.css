@@ -1,0 +1,123 @@
+/**
+ *  COPYRIGHT © 2022 MANU BHAT
+ *  
+ *  ALL RIGHTS RESERVED
+ * 
+ */
+
+#academics {
+    position: relative;
+}
+
+.academics-content {
+    margin: 30px auto 40px;
+
+    width: min(100% - 20px, 800px);
+}
+
+ /* UCSD and CHS */
+
+ .academic-schedule {
+    display: flex;
+    flex-wrap: wrap;
+
+    justify-content: center;
+ }
+
+ .academic-summary {
+     color: var(--text);
+     font-family: var(--light);
+
+     text-align: center;
+
+     margin: 0 auto;
+ }
+
+ .academic-term {
+    display: flex;
+    margin: 10px 10px;
+    align-self: stretch;
+    align-items: stretch;
+ }
+
+ .term-header {
+    writing-mode: vertical-rl;
+    text-orientation: sideways-right;
+
+    transform: rotate(180deg);
+
+    font-family: var(--bold);
+    font-size: 20px;
+    text-align: center;
+
+    color: var(--accent1);
+
+    margin: 0;
+
+    display: inline-block;
+    /* align-self: center; */
+    padding: 5px 2px;
+ }
+
+.academic-course-list {
+    border-radius: 0px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+
+    border-left: solid #aaa 2px;
+
+    width: 300px;
+
+    margin: 0 3px 0 3px;
+
+    /* display: inline-block; */
+}
+
+.academic-course {
+    display: flex;
+    justify-content: space-between;
+
+    margin: 10px 10px;
+}
+
+.academic-course p {
+    display: inline-block;
+
+    font-family: var(--light);
+    color: var(--text);
+
+    margin: 0;
+}
+
+.academic-course .academic-grade-only {
+    width: 20px;
+    color: var(--text);
+    font-family: var(--bold), sans-serif;
+}
+
+.academic-course .academic-ap {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+
+    margin-right: 5px;
+
+    position: relative;
+    offset: 0px 10px;
+    background-color: var(--link);
+    background-position: 0%;
+    color: var(--bg);
+    font-family: var(--bold);
+
+    border-radius: 50%;
+}
+
+.asterisk {
+    font-family: var(--light);
+    font-size: 12px;
+    max-width: 800px;
+    padding: 10px;
+    margin: auto;
+
+    color: var(--text);
+}

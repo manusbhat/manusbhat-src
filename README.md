@@ -1,8 +1,8 @@
-# manusbhat.github.io | manubhat.com
+# (www | esoteric).manubhat.com
 
 This website serves two primary roles:
 * To help me learn web development (this is my first real project!)
-* Showcase a little bit about me
+* Show who am I to prospective employers 
 
 I'll leave the README as that (since you can visit the website to learn more of course).
 
@@ -72,3 +72,4 @@ SVG and PNG icons were sourced from the following locations:
 * https://commons.wikimedia.org/wiki/File:Advanced_Placement_logo_-_College_Board.svg
 * https://github.com/picoCTF/
 * https://icons8.com/icon/qyaeN4EFcdU1/document
+* https://rustacean.net/

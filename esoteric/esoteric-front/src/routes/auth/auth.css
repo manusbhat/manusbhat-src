@@ -1,0 +1,115 @@
+/* Overall wrapper */
+#auth {
+    min-height: 90vh;
+}
+/* Esoteric Logo */
+#auth-esoteric-logo {
+    display: flex;
+
+    margin-bottom: 10px;
+
+    justify-content: center;
+    align-items: center;
+}
+#auth-esoteric-logo a {
+    font-family: var(--serif);
+    text-decoration: none;
+    color: var(--accent);
+
+    font-size: 50px;
+}
+
+#auth-esoteric-logo img {
+    height: 100px;
+    width: 100px;
+}
+
+/* Background  */
+#auth-background {
+    margin: 10px;
+    padding: 15px;
+
+    width: calc(min(100vw - 20px, 350px));
+    box-sizing: border-box;
+}
+
+.auth-titled-form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+/* Individual sub tasks */
+#auth-subtitle {
+    font-family: var(--light);
+    font-size: 16px;
+    color: #FFF;
+    text-align: center;
+
+    margin: 5px 0px;
+}
+
+#auth-forgot-password-helper {
+    text-align: right;
+    width: auto;
+    padding-top: 0px;
+    padding-right: 10px;
+}
+
+/* Field separator */
+#auth-third-party {
+    margin: 10px 0px 0px;
+}
+.auth-separator {
+    color: var(--accent3);
+    font-family: var(--bold);
+
+    display: flex;
+    align-items: center;
+}
+
+.auth-separator span {
+    flex-grow: 1;
+    border: 1px solid var(--accent3);
+    height: 0px;
+    margin: 7px 10px 7px 10px;
+}
+/* third party apis */
+.auth-third-party-api {
+    text-align: center;
+    font-family: var(--bold);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    color: #FFF;
+}
+
+.auth-third-party-api p {
+    display: inline;
+}
+
+.auth-third-party-api img {
+    display: inline;
+    margin-right: 5px;
+
+    background-color: #FFF;
+    padding: 3px;
+    border-radius: 1000px;
+}
+/* Opacity handle */
+#auth-opacity-handle {
+    transition: 0.2s ease-in;
+    transition-property: all;
+}
+
+.auth-clear-handle {
+    opacity: 0;
+    transform: scale(0.975);
+
+    transition-timing-function: ease-out;
+}

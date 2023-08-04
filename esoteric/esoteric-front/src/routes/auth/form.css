@@ -1,0 +1,84 @@
+#form-field {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+}
+#form-field h2 {
+    color: var(--ui1) !important;
+    padding: 0px 0px 5px;
+}
+
+#form-title {
+    font-family: var(--caps);
+    font-size: 40px;
+    margin: 0px 0px 5px;
+
+    color: #FFF;
+}
+
+.form-text-input {
+    margin: 2.5px auto 2.5px;
+
+    padding: 3px 7px;
+
+    min-width: calc(100% - 30px);
+
+    font-size: 15px;
+
+    border: solid var(--accent3) 2px;
+    background-color: var(--ui1);
+    font-family: var(--light);
+}
+
+.form-inline-text-input {
+    margin: 2.5px 0 2.5px;
+
+    padding: 3px 7px;
+
+    min-width: 220px;
+    flex-grow: 1;
+
+    font-size: 15px;
+
+    border: solid var(--accent3) 2px;
+    background-color: var(--ui1);
+    font-family: var(--light);
+}
+
+.form-text-input::placeholder, .form-inline-text-input::placeholder {
+    font-size: 13px;
+    color: #888;
+}
+
+.form-text-input, .form-submit, .form-inline-text-input{
+    display: block;
+    border-radius: 5px !important;
+}
+
+.form-submit {
+    background-color: var(--accent1);
+    margin: 10px auto 0px;
+}
+
+.form-submit-loading {
+    background-color: #CCC;
+}
+
+.form-inline-submit {
+    background-color: var(--accent3);
+    color: #EEE !important;
+    border-radius: 5px;
+}
+
+.form-inline-submit-loading {
+    background-color: #CCC;
+    color: #333 !important;
+}
+
+#form-error-message {
+    text-align: center;
+    font-family: var(--light);
+    color: #F77;
+
+    margin: 5px 0px;
+}
