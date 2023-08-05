@@ -12,6 +12,8 @@ import { Theme } from "./template";
 
 import "./globals.css"
 import './navbar.css'
+import { useUser } from "./proxy";
+import { Link } from "react-router-dom";
 
 type RoutingDictionary = {
     [route: string]: {
@@ -58,6 +60,8 @@ function expandNavbar() {
 
 /* NAVIGATION */
 function Navbar(props: {active: string, setTheme: (theme: Theme) => void}) {
+    const user = useUser();
+
     return (
         <nav id='navbar'>
             {/* <button id='navbar-theme-button' onClick={() => props.setTheme(Theme.LIGHT)}>
@@ -72,8 +76,18 @@ function Navbar(props: {active: string, setTheme: (theme: Theme) => void}) {
                     <Navitem title='Text' active = {props.active}/>
                     <Navitem title='Tutoring' active = {props.active}/>
                     <Navitem title='Synchronizers' active = {props.active}/>
+                   
+                    {user[0] == null &&
+                        <span id="navbar-login">
+                            <Link className="ui-capsule ui-button-primary" to="/auth">
+                                Log In
+                            </Link>
+                        </span>
+                    }
                 </ul>
+
             </span>
+           
             <button id='navbar-expand-button' onClick={expandNavbar}>
                 {/* Belive this is from bootstrap, but not sure */}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><path stroke="rgba(33,33,33,0.5)" strokeWidth="2" strokeLinecap="round" strokeMiterlimit="10" d="M4 8h24M4 16h24M4 24h24"/></svg>

@@ -48,13 +48,32 @@ for SERVICE in "${SERVICES[@]}"; do
     cp stage/"$SERVICE"/esoteric_"$SERVICE" $ESOTERIC_ROOT/"$SERVICE"
 done
 
-# load in environment variables
+# load in environment variables (for signing secrets)
 source $ESOTERIC_ROOT/.env
 
 # start servers
 for SERVICE in "${SERVICES[@]}"; do
     cd $ESOTERIC_ROOT/"$SERVICE"
-    nohup ./esoteric_"$SERVICE" &>> "$SERVICE".log &
+    mkdir -p log
+    nohup ./esoteric_"$SERVICE" &>> "log/$SERVICE".log &
 done
+
+# logs
+for SERVICE in "${SERVICES[@]}"; do
+  echo "/var/www/esoteric/$SERVICE/log/$SERVICE.log {
+            size 1M
+            weekly
+            rotate 4
+            compress
+            missingok
+            notifempty
+            create 644 root root
+        }" > /etc/logrotate.d/esoteric-"$SERVICE"
+done
+
+# frontend
+cd /root
+rm -rf "$ESOTERIC_ROOT"/static
+cp -r stage/static "$ESOTERIC_ROOT" 
 
 echo "----FINISHED SERVER UPDATE----"

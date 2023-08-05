@@ -1,0 +1,29 @@
+#admin-user-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+}
+
+.admin-form table {
+    margin: 10px;
+}
+.admin-form thead {
+    font-family: var(--bold);
+    color: var(--ui1);
+}
+
+.admin-form tbody {
+    font-family: var(--light);
+    color: white;
+}
+
+.admin-users-uname {
+    width: 100%;
+}
+
+.admin-form {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 400px;
+}

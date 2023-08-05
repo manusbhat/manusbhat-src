@@ -1,6 +1,11 @@
 /* Overall wrapper */
 #auth {
     min-height: 90vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 /* Esoteric Logo */
 #auth-esoteric-logo {
@@ -25,18 +30,25 @@
 }
 
 /* Background  */
+#auth-aligner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 #auth-background {
     margin: 10px;
     padding: 15px;
 
     width: calc(min(100vw - 20px, 350px));
     box-sizing: border-box;
+
+    box-shadow: 0px 0px 10px -2px black;
 }
 
 .auth-titled-form {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     justify-content: stretch;
 }
 
@@ -55,12 +67,23 @@
     width: auto;
     padding-top: 0px;
     padding-right: 10px;
+    margin: 0px 0px 3px;
+
+    font-family: var(--light);
+    font-size: 13px;
+    color: var(--ui1);
+}
+#auth-forgot-password-helper span {
+    font-family: var(--bold);
+    color: var(--link);
+    cursor: pointer;
 }
 
 /* Field separator */
 #auth-third-party {
     margin: 10px 0px 0px;
 }
+
 .auth-separator {
     color: var(--accent3);
     font-family: var(--bold);
@@ -101,6 +124,14 @@
     padding: 3px;
     border-radius: 1000px;
 }
+
+#auth-switch-mode {
+    font-family: var(--light);
+    color: var(--ui1);
+    font-size: 13px;
+    text-align: center;
+}
+
 /* Opacity handle */
 #auth-opacity-handle {
     transition: 0.2s ease-in;
@@ -112,4 +143,14 @@
     transform: scale(0.975);
 
     transition-timing-function: ease-out;
+}
+
+#auth-terms {
+    font-family: var(--light);
+    font-size: 13px;
+}
+
+#auth-terms button {
+    font-family: var(--light) !important;
+    text-decoration: underline;   
 }

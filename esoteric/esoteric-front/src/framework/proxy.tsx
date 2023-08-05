@@ -1,18 +1,18 @@
 import { createContext, useContext } from "react";
 
-const EXPIRATION_BUFFER = 60 * 10; // 1 minute
+const EXPIRATION_BUFFER = 60; // 1 minute
 
 export type UserHandle = {
     id: number,
     username: string,
     access: string,
     refresh: string,
-    access_exp: Date
-    refresh_exp: Date 
+    access_exp: number
+    refresh_exp: number  // unix epoch timestamp
 }
 
 export type User = {
-    id: BigInt,
+    id: number,
     username: string,
     access: number
 }
@@ -21,7 +21,7 @@ export type EsotericState = {
     user: UserHandle | null
 }
 
-const AppStateContext = createContext<UserState>([null, () => {}]);
+export const AppStateContext = createContext<UserState>([null, () => {}]);
 
 export function useUser() {
     return useContext(AppStateContext);
@@ -35,9 +35,9 @@ export async function authentication_request(user: UserState, path: string, meth
     }
 
     /* if access token is about to expire, refresh it */
-    if (user[0].access_exp.getTime() < new Date().getTime() - EXPIRATION_BUFFER) {
+    if (user[0].access_exp < new Date().getTime() / 1000 - EXPIRATION_BUFFER) {
         /* if refresh_token is about to expire, set user to null */
-        if (user[0].refresh_exp.getTime() < new Date().getTime() - EXPIRATION_BUFFER) {
+        if (user[0].refresh_exp < new Date().getTime() / 1000 - EXPIRATION_BUFFER) {
             user[1](null);
             return;
         }
@@ -61,7 +61,7 @@ export async function authentication_request(user: UserState, path: string, meth
                     username: user[0].username,
                     access: json.access_token,
                     refresh: user[0].refresh,
-                    access_exp: new Date(json.access_claims.exp * 1000),
+                    access_exp: json.access_claims.exp,
                     refresh_exp: user[0].refresh_exp
                 })
             }
@@ -93,7 +93,13 @@ export async function authentication_request(user: UserState, path: string, meth
 /* admin */
 export async function users(user: UserState) {
     try {
-        return await authentication_request(user, "/auth/users", "GET");
+        const result = await authentication_request(user, "/auth/users", "GET");
+        if (result?.ok) {
+            return await result.json() as User[];
+        }   
+        else {
+            throw Error((await result?.json()).error || "Failed to get users");
+        }
     } catch (err: any) {
         throw err
     }
@@ -119,9 +125,12 @@ export async function login(user: UserState, username: string, password: string)
                 username: json.username,
                 access: json.access_token,
                 refresh: json.refresh_token,
-                access_exp: new Date(json.access_claims.exp * 1000),
-                refresh_exp: new Date(json.refresh_claims.exp * 1000)
+                access_exp: json.access_claim.exp,
+                refresh_exp: json.refresh_claim.exp
             })
+        }
+        else {
+            throw new Error((await res.json()).error); 
         }
     } catch (err: any) {
         throw err

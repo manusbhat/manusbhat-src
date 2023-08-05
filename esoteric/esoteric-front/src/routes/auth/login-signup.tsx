@@ -1,11 +1,15 @@
 import React, { FormEvent, ReactNode, useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { AuthPage } from "./auth";
+import { UserState, login, useUser } from "../../framework/proxy";
+import { Button } from "../../framework/ui";
 
-import "./form.css"
 import "./auth.css"
 import "../../framework/globals.css"
-import { UserState, login, useUser } from "../../framework/proxy";
+import "../../framework/ui.css"
+import { Form, FormError, PasswordField, TitledForm, FormField, SubmitField, UsernameField } from "../../framework/form";
+
+
 const halfFadeoutMillis = 200;
 
 var timeouts: NodeJS.Timeout[] = [];
@@ -17,164 +21,6 @@ enum Page {
     Reset,
 }
 
-function FormField(props: {
-    value?: string,
-    hidden?: string | boolean,
-    placeholder: string,
-    autocomplete: string,
-    setState: (email: string) => void,
-    setError: (error: string) => void
-    autoFocus?: boolean,
-}) {
-    
-    return (
-        // value is optional
-        <input 
-            value={props.value} 
-            autoFocus={props.autoFocus === true}
-            type="text" 
-            placeholder={props.placeholder}
-            autoComplete={props.autocomplete}
-            className={"form-text-input" + (props.hidden ? " null" : "")}
-            onChange={
-                (event) => {
-                    props.setState(event.target.value)
-                    props.setError("");
-                }
-            }/>
-    )
-}
-
-function UsernameField(props: {
-    value?: string,
-    hidden?: string | boolean,
-    setState: (email: string) => void,
-    setError: (error: string) => void
-}) {
-
-    return (
-        // value is optional
-        <input 
-            value={props.value} 
-            autoFocus
-            type="text" 
-            placeholder="uname" 
-            autoComplete="username" 
-            className={"form-text-input" + (props.hidden ? " null" : "")}
-            onChange={
-                (event) => {
-                    props.setState(event.target.value)
-                    props.setError("");
-                }
-            }/>
-    )
-}
-
-function PasswordField(props: {
-    placeholder: string, 
-    passwordType: string, 
-    value?: string,
-    setState: (password: string) => void,
-    setError: (error: string) => void
-}) {
-
-    return (
-        // value is optional
-        <input 
-            type="password" 
-            placeholder={props.placeholder}
-            autoComplete={props.passwordType + "-password"}
-            className="form-text-input"
-            value={props.value}
-            onChange={
-                (event) => {
-                    props.setState(event.target.value)
-                    props.setError("");
-                }
-            }/>
-    )
-}
-
-function SubmitField(props: {
-    title: string, 
-    titleLoading: string, 
-    isLoading: boolean
-}) {
-    
-    return (
-        <input type="submit" 
-            value={props.isLoading ? props.titleLoading : props.title} 
-            disabled={props.isLoading} 
-            className={"capsule form-submit" + (props.isLoading ? " form-submit-loading" : "")}/>
-    )
-}
-
-function FormError(props: {error: string}) {
-    return (
-        <p id="form-error-message">
-            {props.error}
-        </p>
-    )
-}
-
-function TitledForm(props: {
-    title:string, 
-    children: ReactNode, 
-    formSubmit?: (event: React.FormEvent) => Promise<void>
-
-    nonFormChildren?: ReactNode
-}) {
-    return (
-        // className optional
-        <div className="auth-titled-form">
-            <p>{props.title}</p>
-            {props.nonFormChildren}
-            <form id="form-field" onSubmit={props.formSubmit}>
-                {props.children}
-            </form>
-        </div>
-    )
-}
-
-function Form(props: {
-        formSubmit:(event: FormEvent) => Promise<void>,
-        setUname: (uname: string) => void,
-        setError: (error: string) => void,
-        setPass:  (error: string) => void,
-
-        uname: string,
-        pass: string,
-
-        children: ReactNode,
-        
-        title: string,
-        titleLoading: string,
-        isLoading: boolean
-    }) {
-
-    return (
-        <TitledForm title={props.title} formSubmit={props.formSubmit}>
-            {/* uname */}
-            <UsernameField
-                value={props.uname}
-                setState={props.setUname}
-                setError={props.setError}/>
-            <PasswordField 
-                value={props.pass}
-                placeholder="password" 
-                passwordType="current"
-                setState={props.setPass}
-                setError={props.setError}/>
-
-            {props.children}
-
-            <SubmitField 
-                title={props.title} 
-                titleLoading={props.titleLoading}
-                isLoading={props.isLoading}/>
-        </TitledForm>
-    )
-}
 
 function ThirdPartyAPI(props: React.PropsWithChildren<{
         isLoading: boolean, 
@@ -314,7 +160,7 @@ abstract class LoginSignupBase<state extends stateBase> extends React.Component<
                 <FormError error={this.state.error}/>
 
                 {/* Switching to login or signup */}
-                <p>
+                <p id="auth-switch-mode">
                     {this.alternateIntro}<br/>
                     <button onClick={() => {
                         const next = this.props.page === Page.Login ? Page.Signup : Page.Login;
@@ -383,7 +229,7 @@ class LoginWindow extends LoginSignupBase<stateBase> {
 
     thirdFormItem() {
         return (
-            <p>
+            <p id="auth-forgot-password-helper">
                 Forgot password?{' '}
                 {/* vannilla span so that it ignores the enter commands */}
                 <span onClick={async () => {
@@ -461,6 +307,7 @@ class SignupWindow extends LoginSignupBase<signupState> {
         this.setState({isLoading: true})
 
         try {
+            this.setState({error: "Sign up disabled. Contact admin directly "})
             // const result = await signUpWithUnameAndPassword(this.props.uname, this.props.pass);
             // if (!result.userConfirmed) {
             //     this.transitionTo(Page.Verify);
@@ -508,7 +355,7 @@ function VerifyCode(props: {uname: string}) {
         <TitledForm title="Verify Uname" formSubmit={formSubmit}>
             <p>
                 An uname has been sent to {props.uname} with a six-digit code to confirm your identity. Please enter it or
-                <button onClick={() => {/* sendCode(props.uname)} */}}>resend</button>
+                {/* <Button onClick={() => sendCode(props.uname)}>resend</Button> */}
             </p>
 
             <FormField 
@@ -682,7 +529,7 @@ function Window(props : {page: Page}) {
 
     return (
         <AuthPage terms={
-            <p>
+            <p id="auth-terms">
                 Account operations are currently limited. <button onClick={() => {navigate("/")}}>View home</button> for alternate options.
             </p>
         }>
@@ -694,12 +541,16 @@ function Window(props : {page: Page}) {
 export function Signup() {
     // user should always be at the top level where it's stateless, bc otherwise it clogs up for some reason
     return (
-        <Window page={Page.Signup}/>
+        <div className="body-theme-light">
+            <Window page={Page.Signup} />
+        </div>
     )
 }
 
 export function Login() {
     return (
-        <Window page={Page.Login}/>
+        <div className="body-theme-light">
+            <Window page={Page.Login}/>
+        </div>
     )
 }

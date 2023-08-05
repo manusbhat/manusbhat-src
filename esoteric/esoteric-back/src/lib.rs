@@ -1,20 +1,14 @@
-use std::{
-    env,
-    result::Result, fmt::Display
-};
+use std::{env, result::Result, fmt::Display, fs};
 use std::ops::Add;
 use std::time::{Duration, SystemTimeError};
-use axum::{
-    async_trait,
-    extract::FromRequestParts,
-    http::{request::Parts, StatusCode},
-    response::{IntoResponse, Response},
-    Json, RequestPartsExt
-};
+use axum::{async_trait, extract::FromRequestParts, http::{request::Parts, StatusCode}, response::{IntoResponse, Response}, Json, RequestPartsExt, extract};
 use axum::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
 };
+use axum::body::Body;
+use axum::debug_handler;
+use axum::http::Request;
 use jsonwebtoken::{
     decode,
     DecodingKey, 
@@ -23,6 +17,11 @@ use jsonwebtoken::{
 use sqlx::sqlite;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tracing::Level;
+use tracing_subscriber::filter;
+use tracing_subscriber::fmt::init;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -50,6 +49,7 @@ pub enum Error {
     InvalidCredentials(),
     InvalidToken(),
 
+    InvalidArgument(String),
     ServerError(String),
 
     InsufficientPermissions(),
@@ -157,6 +157,7 @@ impl Error {
             Error::InvalidCredentials() =>        "Invalid username or password",
             Error::InvalidToken() =>              "Invalid token",
             Error::InsufficientPermissions() =>   "Missing permissions",
+            Error::InvalidArgument(message) =>      message,
             Error::ServerError(message) =>      message
         }
     }
@@ -175,6 +176,7 @@ impl IntoResponse for Error {
             Error::InvalidCredentials() =>        StatusCode::UNAUTHORIZED,
             Error::InvalidToken() =>              StatusCode::BAD_REQUEST,
             Error::InsufficientPermissions() =>   StatusCode::BAD_REQUEST,
+            Error::InvalidArgument(_) =>              StatusCode::BAD_REQUEST,
             Error::ServerError(_) =>              StatusCode::INTERNAL_SERVER_ERROR
         };
 
@@ -199,6 +201,69 @@ impl AppState {
     }
 }
 
+#[cfg(debug_assertions)]
+pub fn init_log() {
+    let layer = tracing_subscriber::fmt::layer();
+
+    let filter = filter::Targets::new()
+        .with_target("tower_http::trace::on_response", Level::TRACE)
+        .with_target("tower_http::trace::on_request", Level::TRACE)
+        .with_target("tower_http::trace::make_span", Level::DEBUG)
+        .with_default(Level::INFO);
+
+    tracing_subscriber::registry()
+        .with(layer)
+        .with(filter)
+        .init();
+}
+
+#[cfg(not(debug_assertions))]
+pub fn init_log() {
+    let layer = tracing_subscriber::fmt::layer();
+
+    let filter = filter::Targets::new()
+        .with_target("tower_http::trace::on_response", Level::TRACE)
+        .with_target("tower_http::trace::on_request", Level::TRACE)
+        .with_target("tower_http::trace::make_span", Level::DEBUG)
+        .with_default(Level::INFO);
+
+    tracing_subscriber::registry()
+        .with(layer)
+        .with(filter)
+        .init();
+}
+
 pub async fn status() -> &'static str {
     "OK"
+}
+
+#[derive(Debug, Serialize)]
+pub struct DBStats {
+    db_bytes: i32,
+    log_bytes: i32
+}
+
+pub async fn stats(request: Request<Body>) -> Result<Json<DBStats>, Error> {
+    let path = request.uri().path();
+    let mut service = path.split("/");
+            service.next(); /* bypass first region */
+    let next = service.next().ok_or(Error::ServerError("Invalid Path".to_string()))?;
+
+    let db= next.to_string() + ".db";
+    let log = "log/".to_string() + next + ".log";
+
+    let meta_db = match fs::metadata(db) {
+        Ok(metadata) => metadata.len(),
+        Err(_) => 0
+    } as i32;
+
+    let meta_log = match fs::metadata(log) {
+        Ok(metadata) => metadata.len(),
+        Err(_) => 0
+    } as i32;
+
+    Ok(Json(DBStats {
+        db_bytes: meta_db,
+        log_bytes: meta_log
+    }))
 }

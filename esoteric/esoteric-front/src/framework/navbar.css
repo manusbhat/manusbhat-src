@@ -61,7 +61,8 @@
     padding-inline-start: 0px;
 }
 #nav-buttons {
-    display: inline;
+    display: inline-flex;
+    align-items: center;
 }
 #nav-buttons li {
     display: inline-block;
@@ -82,6 +83,12 @@
 #nav-buttons > li:last-child > .nav-button-link {
     border-right: solid 0px var(--complement);
 } 
+
+#navbar-login {
+    margin: 0px 0;
+    padding: 0px 7px;
+    display: inline-block;
+}
 
 /* First or second order nav button */
 .nav-button-link {
@@ -172,10 +179,11 @@ main {
     }
 
     .navbar-expanded {
-        height: 180px !important;
+        height: 235px !important;
     }
 
     #nav-buttons {
+        display: inline;
         margin: 0 0 0 5px;
     }
 
@@ -195,14 +203,20 @@ main {
     #nav-buttons li {
         display: block;
     }
+    #navbar-login {
+        display: flex;
+        justify-content: center;
+    }
+
+   
 
     #nav-buttons > li > .nav-button-link {
         border-right: none;
-        border-bottom: solid 2px var(--accent3);
+        border-bottom: solid 2px var(--complement);
         margin: 7px 0;
     }
 
     #nav-buttons > li:last-child > .nav-button-link {
-        border-bottom: solid 0px var(--accent3);
+        border-bottom: solid 0px var(--complement);
     } 
 }

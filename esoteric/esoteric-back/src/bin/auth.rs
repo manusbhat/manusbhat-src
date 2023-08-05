@@ -1,5 +1,5 @@
 use std::net::SocketAddr;
-use std::time::SystemTimeError;
+use std::time::{SystemTime, SystemTimeError};
 use std::ops::Add;
 use rand_core::{OsRng, RngCore};
 use argon2::{
@@ -9,7 +9,7 @@ use argon2::{
     Argon2
 };
 use axum::{
-    routing::{get, post, delete}, 
+    routing::{get, put, post, delete},
     Router, Json, async_trait, 
     extract::{FromRequestParts, State}, 
     TypedHeader, 
@@ -20,11 +20,13 @@ use axum::{
 use jsonwebtoken::{encode, Header, decode, Validation};
 use sqlx::{sqlite::SqlitePool, Sqlite, migrate::MigrateDatabase};
 use serde::{Deserialize, Serialize};
+use sqlx::types::chrono;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tower_http::trace::TraceLayer;
 
 
-use esoteric_back::{status, Error, AppState, AdminServerClaim, RootAdminClaim, REFRESH_TOKEN_EXPIRATION_SECONDS};
+use esoteric_back::{status, Error, AppState, AdminServerClaim, RootAdminClaim, REFRESH_TOKEN_EXPIRATION_SECONDS, stats, init_log};
+use esoteric_back::Error::InvalidArgument;
 
 const DATABASE_URL: &str = "sqlite:auth.db";
 const PORT: u16 = 3192;
@@ -177,6 +179,10 @@ struct UserCreateIn {
 }
 
 async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(user): Json<UserCreateIn>) -> Result<(), Error> {
+    if user.username.is_empty() || user.password.is_empty() {
+        return Err(Error::InvalidArgument("Username and password should be nonempty".to_string()))
+    }
+
     /* create with password */
     /* we use i32 to avoid javascript loss of precision */
     let id = (OsRng::default().next_u64() % (i32::MAX as u64)) as i64;
@@ -186,11 +192,12 @@ async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(use
         .map_err(|_| Error::ServerError("Could not hash password".to_string()))?;
     let role = user.access;
 
-    sqlx::query("INSERT INTO users (id, username, password_digest, role) VALUES (?, ?, ?, ?)")
+    sqlx::query("INSERT INTO users (id, username, password_digest, role, creation_date) VALUES (?, ?, ?, ?, ?)")
         .bind(id)
         .bind(user.username)
         .bind(password_digest.to_string())
         .bind(role)
+        .bind(chrono::Utc::now().naive_utc())
         .execute(handle.db())
         .await
         .map_err(|_| Error::ServerError("Could not create user".to_string()))?;
@@ -198,7 +205,86 @@ async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(use
     Ok(())
 }
 
+#[derive(Debug, Deserialize)]
+struct UserRenameIn {
+    username: String,
+    new_username: String
+}
+
+async fn user_rename(State(handle): State<AppState>, _: RootAdminClaim, Json(user): Json<UserRenameIn>) -> Result<(), Error> {
+    if user.new_username.is_empty() {
+        return Err(InvalidArgument("New username cannot be empty".to_string()))
+    }
+
+    let (rows, ): (i64, ) = sqlx::query_as("
+        BEGIN;
+        UPDATE users
+        SET username=?
+        WHERE username = ?;
+        SELECT changes();
+        COMMIT;")
+        .bind(user.new_username)
+        .bind(user.username)
+        .fetch_one(handle.db())
+        .await
+        .map_err(|_| Error::ServerError("Could not rename user".to_string()))?;
+
+    if rows == 0 {
+        return Err(InvalidArgument("Specified user does not exist!".to_string()));
+    }
+
+    Ok(())
+}
+
+
+#[derive(Debug, Deserialize)]
+struct UserSetpasswordIn {
+    username: String,
+    password: String
+}
+async fn user_set_password(State(handle): State<AppState>, _: RootAdminClaim, Json(user): Json<UserSetpasswordIn>) -> Result<(), Error> {
+    if user.password.is_empty() {
+        return Err(Error::InvalidArgument("Password cannot be empty".to_string()))
+    }
+
+    let salt = SaltString::generate(&mut OsRng);
+    let argon = Argon2::default();
+    let password_digest = argon.hash_password(user.password.as_bytes(), &salt)
+        .map_err(|_| Error::ServerError("Could not hash password".to_string()))?;
+
+    let (rows, ): (i64, ) = sqlx::query_as("
+        BEGIN;
+        UPDATE users
+        SET password_digest=?
+        WHERE username = ?;
+        SELECT changes();
+        COMMIT;")
+        .bind(password_digest.to_string())
+        .bind(user.username)
+        .fetch_one(handle.db())
+        .await
+        .map_err(|_| Error::ServerError("Could not set password for user".to_string()))?;
+
+    if rows == 0 {
+        return Err(InvalidArgument("Specified user does not exist!".to_string()));
+    }
+
+    Ok(())
+}
+
+
 async fn user_delete(State(handle): State<AppState>,  _: RootAdminClaim, Json(username): Json<String>) -> Result<(), Error> {
+    let (res, ): (i64, ) = sqlx::query_as("SELECT role FROM users WHERE username = ?")
+        .bind(username.clone())
+        .fetch_one(handle.db())
+        .await
+        .map_err(|_| Error::ServerError("Could not fetch user, does user exist?".to_string()))?;
+
+    /* cannot delete admin */
+    if res != 0 {
+        return Err(Error::InvalidArgument("Cannot delete admin!".to_string()));
+    }
+
     /* delete user from database */
     sqlx::query("DELETE FROM users WHERE username = ?")
         .bind(username)
@@ -230,9 +316,7 @@ async fn users(State(handle): State<AppState>, _: RootAdminClaim) -> Result<Json
 /* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .init();
+    init_log();
 
     if !Sqlite::database_exists(DATABASE_URL).await.expect("Error checkin") {
         Sqlite::create_database(DATABASE_URL).await.expect("Error creating database");
@@ -241,12 +325,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
 
     sqlx::query("
-        CREATE TABLE IF NOT EXISTS 
+        CREATE TABLE IF NOT EXISTS
         users (
-            id BIGINT PRIMARY KEY  NOT NULL,
+            id  BIGINT PRIMARY KEY NOT NULL,
             username          TEXT NOT NULL UNIQUE,
             password_digest   TEXT NOT NULL,
-            role            BIGINT NOT NULL
+            role            BIGINT NOT NULL,
+            creation_date     DATE NOT NULL
         );"
     )
         .execute(&db).await.expect("Error creating initial table");
@@ -264,8 +349,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/auth/reauthorize", post(reauthorize))
         .route("/auth/user", post(user_create))
         .route("/auth/user", delete(user_delete))
+        .route("/auth/user/username", put(user_rename))
+        .route("/auth/user/password", put(user_set_password))
         .route("/auth/users", get(users))
+        /* health functions */
         .route("/auth/status", get(status))
+        .route("/auth/stats", get(stats))
         .with_state(state)
         .layer(TraceLayer::new_for_http());
 

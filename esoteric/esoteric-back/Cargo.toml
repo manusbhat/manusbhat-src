@@ -25,12 +25,12 @@ path = "src/bin/enss.rs"
 
 [dependencies]
 argon2 = "0.5.1" 
-axum = { version = "0.6.19", features = ["headers"] }
+axum = { version = "0.6.19", features = ["headers", "macros"] }
 jsonwebtoken = "8.3.0"
 rand_core = { version = "0.6.4", features = ["std"] }
 serde = "1.0.178"
 serde_json = "1.0"
-sqlx = { version = "0.7.1", features = ["sqlite", "macros", "runtime-tokio"] }
+sqlx = { version = "0.7.1", features = ["sqlite", "macros", "chrono", "runtime-tokio"] }
 tokio = { version = "1.29.1", features = ["full"] }
 tower-http = { version = "0.4.3", features = ["trace"] }
 tracing = "0.1.37"

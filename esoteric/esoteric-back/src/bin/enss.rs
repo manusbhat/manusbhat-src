@@ -6,7 +6,7 @@ use axum::{
     Router, Extension, Json, middleware::AddExtension
 };
 
-use esoteric_back::{status};
+use esoteric_back::{stats, status};
 
 use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
 use serde::{Deserialize, Serialize};
@@ -81,8 +81,10 @@ async fn main() {
     //     .route("/reauthorize", get(refresh_token))
     //     .route("/user", post(user_create))
     //     .route("/user", delete(user_delete))
-        .route("/enss/status", get(status));
-        // .layer(AddExtension::new(state));
+        .route("/enss/status", get(status))
+        .route("/enss/stats", get(stats));
+
+    // .layer(AddExtension::new(state));
 
     /* localhost:3000 */
     let addr = SocketAddr::from(([127, 0, 0, 1], PORT));

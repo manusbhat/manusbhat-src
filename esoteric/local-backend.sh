@@ -22,11 +22,12 @@ source local/.env
 
 for SERVICE in "${SERVICES[@]}"; do
     mkdir -p local/$SERVICE
+    mkdir -p local/$SERVICE/log
 
     cp esoteric-back/target/debug/esoteric_$SERVICE local/$SERVICE
 
     cd local/$SERVICE
     # do not redirect output
-    nohup ./esoteric_$SERVICE &>> $SERVICE.log &
+    nohup ./esoteric_$SERVICE &>> log/$SERVICE.log &
     cd ../..
 done

@@ -2,12 +2,13 @@ import { ReactNode, useEffect } from "react"
 
 import "./auth.css"
 import "../../framework/globals.css"
+import { Link } from "react-router-dom"
 
 function EsotericLogo() {
     return (    
         <span id="auth-esoteric-logo">
             {/* force a page reload in case the user newly signs in */}
-            <a href="/">Esoteric</a>
+            <Link to="/">Esoteric</Link>
             <img alt="Esoteric Logo" src="/svg/esoteric-flower.svg"/>
         </span>
     )
@@ -35,8 +36,10 @@ export function AuthPage(props: React.PropsWithChildren<{terms?: ReactNode}>) {
 
 function AuthBackground(props: React.PropsWithChildren<{}>) {
     return (
-        <div>
-            {props.children}
+        <div id="auth-aligner">
+            <div id="auth-background" className="window-background">
+                {props.children}
+            </div>
         </div>
     )
 }

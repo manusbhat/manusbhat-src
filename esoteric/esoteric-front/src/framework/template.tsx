@@ -13,6 +13,7 @@ import './template.css'
 import { Navbar, routing_dicitionary } from "./navbar";
 import Footer from "./footer";
 import { Sidebar, SidebarElement } from "./sidebar";
+import { AppStateContext, EsotericState, UserHandle } from "./proxy";
 
 enum Theme {
     LIGHT, DARK
@@ -80,12 +81,13 @@ function Background(props: {useStreaks: boolean}) {
 
 
 function StandardTemplate(props: React.PropsWithChildren<{active: string, useStreaks: boolean}>) {
-    const sidebarElements = routing_dicitionary[props.active].submenu.map (
+    const sidebarElements = routing_dicitionary[props.active]?.submenu.map (
         (elem) => 
             <SidebarElement key={elem.id} id={elem.id} header={elem.name.toUpperCase()} />
     )
 
-    const [theme, setTheme] = useState(Theme.DARK);
+    const [theme, setTheme] = useState(Theme.LIGHT);
+
 
     useEffect(() => {
         switch (theme) {
@@ -104,7 +106,6 @@ function StandardTemplate(props: React.PropsWithChildren<{active: string, useStr
                 <Navbar active={props.active} setTheme={setTheme}/>
             </header>
 
-
             <main>
                 {props.children}
 
@@ -117,8 +118,6 @@ function StandardTemplate(props: React.PropsWithChildren<{active: string, useStr
                 <Background useStreaks={props.useStreaks}/>
 
             </main>
-
-           
         </>
     );
 }

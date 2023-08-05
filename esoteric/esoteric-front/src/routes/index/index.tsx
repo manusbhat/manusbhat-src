@@ -11,7 +11,7 @@ import { StandardTemplate } from "../../framework/template";
 import "./index.css"
 import Section from "../../framework/section";
 
-function ActualStatus(props: {path: string}) {
+function ActualStatus(props: {path: string, name: string}) {
     const [status, setStatus] = useState("ping");
     const [className, setClassName] = useState("index-status-loading")
 
@@ -19,7 +19,7 @@ function ActualStatus(props: {path: string}) {
         const worker = async () => {
             var result;
             try {
-                result = await fetch(props.path);
+                result = await fetch(process.env.REACT_APP_API_URL + props.path);
             } catch (e) {
                 setStatus("501 ERR");
                 setClassName("index-status-err"); 
@@ -37,26 +37,75 @@ function ActualStatus(props: {path: string}) {
         }
 
         worker();
-    })
+    }, [])
 
     return (
-        <strong className={className}>
-            {status}
-        </strong>
+        <p className="index-status-subtitle">
+            {"system::" + props.name}
+            {' '}
+            <strong className={className}>
+                {status}
+            </strong>
+        </p>
     )    
 }
 
-function Status(props: {id?: string, title: string, subtitle?: string, subtitle_path?: string, icon: string, children?: ReactNode}) {
+function Stats(props: {path: string, name: string}) {
+    const [stats, setStats] = useState({"db_bytes": 0, "log_bytes": 0});
+
+    useEffect(() => {
+        const worker = async () => {
+            var result;
+            try {
+                result = await fetch(process.env.REACT_APP_API_URL + props.path);
+            } catch (e) {
+                return;
+            }
+
+            if (result.ok) {
+                const json = await result.json();
+                setStats(json);
+            }
+        }
+
+        worker();
+    }, [])
+
+    return (
+        <p className="index-status-subtitle">
+            {"db: "}
+            <strong className="index-status-">
+                {Math.floor(stats.db_bytes / 1000) + " kB"}
+            </strong>
+            {" log: "}
+            <strong className="index-status-">
+                {Math.floor(stats.log_bytes / 1000) + " kB"}
+            </strong>
+        </p>
+    )
+    
+}
+
+function Status(props: React.PropsWithChildren<{
+    id?: string, 
+    title: string,
+    name?: string, 
+    status?: string,
+    stats?: string
+    icon: string, 
+}>) {
     return (
         <div id={props.id} className="index-status window-background">
             <p className="index-status-title">{props.title}</p>
+            
             {
-                props.subtitle &&
-                <p className="index-status-subtitle">
-                    {props.subtitle}
-                    {' '}
-                    <ActualStatus path={process.env.REACT_APP_API_URL + props.subtitle_path!} />
-                </p>
+                props.status &&
+                <ActualStatus name={props.name!} path={props.status} />
+            }
+
+            {
+                props.stats &&
+                <Stats name={props.name!} path={props.stats} />
             }
             
             <div className="index-status-img-holder">
@@ -82,8 +131,8 @@ export default function Home() {
                 <Status
                     id="index-nginx"
                     title="nginx Reverse Proxy"
-                    subtitle="system::nginx"
-                    subtitle_path="/status"
+                    name="nginx"
+                    status="/status"
                     icon="/img/nginx.webp"
                     >
                     {/* connections for a later story... */}
@@ -99,50 +148,58 @@ export default function Home() {
                 
                 <Status
                     title="Tutoring API"
-                    subtitle="system::enss"
-                    subtitle_path="/enss/status"
+                    name="enss"
+                    status="/enss/status"
                     icon="/img/rust.webp"
                     />
                 
                 <Status
                     title="Text API"
-                    subtitle="system::text"
-                    subtitle_path="/text/status"
+                    name="text"
+                    status="/text/status"
                     icon="/img/rust.webp"
                     />
 
                 <Status
                     title="Authentication API"
-                    subtitle="system::auth"
-                    subtitle_path="/auth/status"
+                    name="auth"
+                    status="/auth/status"
                     icon="/img/rust.webp"
                     />
                 
                 <Status
                     title="Synchronizers API"
-                    subtitle="system::sync"
-                    subtitle_path="/sync/status"
+                    name="sync"
+                    status="/sync/status"
                     icon="/img/rust.webp"
                     />
 
                 <Status
-                    title="enss-DB"
+                    title="enss.db"
                     icon="/img/sqlite.webp"
+                    name="enss"
+                    stats="/enss/stats"
                     />
                 
                 <Status
-                    title="text-DB"
+                    title="text.db"
                     icon="/img/sqlite.webp"
+                    name="text"
+                    stats="/text/stats"
                     />
 
                 <Status
-                    title="auth-DB"
+                    title="auth.db"
                     icon="/img/sqlite.webp"
+                    name="auth"
+                    stats="/auth/stats"
                     />
                 
                 <Status
-                    title="sync-DB"
+                    title="sync.db"
                     icon="/img/sqlite.webp"
+                    name="sync"
+                    stats="/sync/stats"
                     />
             </Section>
         </StandardTemplate>

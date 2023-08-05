@@ -8,6 +8,7 @@ use axum::{
 
 use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
 use serde::{Deserialize, Serialize};
+use esoteric_back::stats;
 
 const DATABASE_URL: &str = "sqlite:esoteric.db";
 const PORT: u16 = 3194;
@@ -78,12 +79,13 @@ async fn main() {
     //     public_value: 0
     // });
 
-    let app = Router::new();
+    let app = Router::new()
     //     .route("/authorize", post(seed_token))
     //     .route("/reauthorize", get(refresh_token))
     //     .route("/user", post(user_create))
     //     .route("/user", delete(user_delete))
         // .route("/status", get(status));
+            .route("/sync/stats", get(stats));
         // .layer(AddExtension::new(state));
 
     /* localhost:3000 */
