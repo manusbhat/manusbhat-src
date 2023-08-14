@@ -29,6 +29,7 @@
   --light: 'Montserrat-light', sans-serif;
   --serif: 'PT serif', serif;
   --caps: 'Alegreya', sans-serif;
+  --comp-prog: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 html {
@@ -105,19 +106,9 @@ section {
 }
 
 h1 {
-  font-weight: 100;
-  font-family: var(--light);
-  font-size: 28px;
-  
-  display: block;
-
-  color: var(--text);
-  border-bottom: var(--accent3) ridge 2px;
-
-  backdrop-filter: blur(1px);
-
-  width: 350px;
+  font-family: var(--bold);
+  font-size: 60px;
+  color: #333;
+  margin: 0px auto;
   text-align: center;
-
-  margin: 0 auto;
 }

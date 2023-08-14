@@ -1,0 +1,275 @@
+
+.tutoring-list {
+    font-family: var(--bold);
+    width: 750px;
+    margin: 0px auto;
+
+    border-collapse: collapse; 
+}
+
+.tutoring-list-label {
+    width: 100%;
+    font-family: var(--comp-prog);
+}
+
+.tutoring-list tr {
+    border-bottom: solid 1px #CCCCCC;
+}
+
+.tutoring-list tr:last-child {
+    border-bottom: none;
+}
+
+.tutoring-list td {
+    padding: 10px 10px;
+}
+
+.tutoring-rating {
+    width: min-content;
+}
+.tutoring-rating-plat {
+    color: #e5e4e2;
+}
+.tutoring-rating-gold {
+    color: #ffd700;
+}
+.tutoring-rating-silver {
+    color: #c0c0c0;
+}
+.tutoring-rating-bronze {
+    color: #cd7f32;
+}
+
+.tutoring-testcase-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.tutoring-testcase {
+    border: solid 1px;
+    width: 15px;
+    height: 15px;
+    font-size: 12px;
+    margin: 1px;
+    text-align: center;
+    font-family: var(--bold);
+
+    transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+.tutoring-testcase p {
+    margin: 0px;
+    position: relative;
+}
+
+.tutoring-testcase-passed {
+    border-color: #339933;
+    background-color: #EEFFEE;
+    color: #339933;
+}
+
+.tutoring-testcase-passed p {
+    top: 2.5px;
+}
+
+.tutoring-testcase-loading {
+    border-color: #777777;
+    background-color: #EEEEEE;
+    color: #777777;
+}
+
+.tutoring-testcase-loading p {
+    bottom: 1x;
+}
+
+.tutoring-testcase-fail {
+    border-color: #993333;
+    background-color: #FFE2E2;
+    color: #993333;
+}
+
+.tutoring-header h1, h2 {
+    font-family: var(--comp-prog);
+}
+
+.tutoring-problem {
+    display: flex;
+    margin: 0px auto;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+}
+
+.tutoring-problem-header h1 {
+    font-size: 30px;
+    color: black;
+    margin: 0px;
+}
+
+.tutoring-problem-header h2 {
+    font-size: 20px;
+    font-weight: normal ;
+    color: black;
+}
+
+.tutoring-problem-header {
+    margin: 0px 0px 25px;
+}
+
+.tutoring-problem-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin: 3px;
+}
+
+.tutoring-problem-subtitle {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.tutoring-problem-subtitle p, b {
+    margin: 0px;
+    font-family: var(--comp-prog);
+    font-size: 13px;
+    color: black;
+}
+.tutoring-problem-subtitle b {
+    font-weight: normal;
+    text-decoration: underline;
+    margin-left: 10px;
+    margin-right: 2px;
+}
+
+
+.tutoring-problem-main {
+    width: 850px;
+    padding: 20px;
+
+    box-sizing: border-box;
+    border: solid 1px #333333;
+}
+
+.tutoring-problem-config {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin: 30px;
+}
+
+.tutoring-md {
+    font-family: var(--comp-prog);
+}
+
+.tutoring-md p {
+    margin: 20px 0px;
+}
+
+.tutoring-md pre {
+    margin: 20px 0;
+}
+
+.tutoring-md code {
+    font-size: 15px;
+}
+
+.tutoring-md code.language-in {
+    color: black;
+}
+
+.tutoring-md code.language-out {
+    color: #791296;
+}
+
+.tutoring-md h1 {
+    text-align: start;
+    font-family: var(--comp-prog);
+    font-weight: bold;
+    font-size: inherit !important;
+    margin: 20px 0px;
+    color: #000;
+}
+
+#tutoring-submission {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tutoring-submission-inputs {
+    display: flex;
+    flex-direction: column;
+}
+
+.tutoring-submission-input {
+    margin: 15px 5px;
+}
+
+#tutoring-submission label {
+    font-family: var(--comp-prog);
+    margin: 5px;
+    display: inline-block;
+    text-align: center;
+}
+
+#tutoring-submission-language {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: solid 1px black;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-family: var(--comp-prog);
+    font-size: 12px;
+    background-color: #DDD;
+}
+
+#tutoring-submission-file::file-selector-button {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-family: var(--comp-prog);
+    font-size: 12px;
+    background-color: #DDD;
+    padding: 4px 8px;
+    border-radius: 5px;
+    border: solid 1px;
+}   
+#tutoring-submission-file::file-selector-button:hover {
+    background-color: #CCC;
+}
+
+.tutoring-submission-error {
+    font-family: var(--comp-prog);
+    color: var(--status-err);
+}
+
+.tutoring-submit {
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+#tutoring-submission hr {
+    width: 100%;
+}
+
+.tutoring-submission-row {
+    display: flex;
+    flex-direction: row;
+    margin: 2px;
+}
+
+.tutoring-submission-index {
+    font-family: var(--comp-prog);
+    margin: 0px;
+    width: 20px;
+    text-align: right;
+    margin: 0px 4px;
+}

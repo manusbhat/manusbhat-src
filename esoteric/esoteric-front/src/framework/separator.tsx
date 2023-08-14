@@ -38,7 +38,6 @@ export function Separator() {
         return ret;
     });
 
-
     const sampleCount = Math.ceil(size.width / width);
     width = size.width / sampleCount;
 
@@ -52,7 +51,7 @@ export function Separator() {
         push.push(
             <path
                 key={i}
-                stroke={zParity ? "#00FF00" : "#FFFF00"}
+                stroke={zParity ? "#333333" : "#888888"}
                 d={
                     `M ${xValues[0] * angularWidth + j * width}, ${iParity ? 2 * mid - flatSin[0] : flatSin[0]}
                         ${xValues

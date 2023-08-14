@@ -1,32 +1,44 @@
 use std::net::SocketAddr;
-use std::time::{SystemTime, SystemTimeError};
 use std::ops::Add;
-use rand_core::{OsRng, RngCore};
+use std::sync::Arc;
+use std::time::SystemTimeError;
 use argon2::{
-    password_hash::{
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Argon2
+    Argon2,
+    PasswordHash,
+    PasswordHasher,
+    PasswordVerifier,
+    password_hash::SaltString
 };
 use axum::{
-    routing::{get, put, post, delete},
-    Router, Json, async_trait, 
-    extract::{FromRequestParts, State}, 
-    TypedHeader, 
-    headers::{Authorization, authorization::Bearer}, 
-    http::request::Parts, 
-    RequestPartsExt
+    extract::{FromRequestParts, State},
+    headers::Authorization,
+    headers::authorization::Bearer,
+    http::request::Parts,
+    Json,
+    RequestPartsExt,
+    Router,
+    TypedHeader,
+    routing::{post, get, put, delete},
+    async_trait
 };
-use jsonwebtoken::{encode, Header, decode, Validation};
-use sqlx::{sqlite::SqlitePool, Sqlite, migrate::MigrateDatabase};
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use jsonwebtoken::{decode, encode, Header, Validation};
+use rand_core::{OsRng, RngCore};
+use sqlx::{
+    Executor,
+    Sqlite,
+    SqlitePool,
+    migrate::MigrateDatabase,
+    types::chrono::Utc
+};
 use tower_http::trace::TraceLayer;
-
-
-use esoteric_back::{status, Error, AppState, AdminServerClaim, RootAdminClaim, REFRESH_TOKEN_EXPIRATION_SECONDS, stats, init_log};
-use esoteric_back::Error::InvalidArgument;
+use esoteric_back::{
+    auth::{AdminServerClaim, REFRESH_TOKEN_EXPIRATION_SECONDS, RootAdminClaim},
+    handlers::{stats, status},
+    logging::init_log,
+    state::{AppState, Error},
+    state::Error::InvalidArgument
+};
 
 const DATABASE_URL: &str = "sqlite:auth.db";
 const PORT: u16 = 3192;
@@ -180,7 +192,7 @@ struct UserCreateIn {
 
 async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(user): Json<UserCreateIn>) -> Result<(), Error> {
     if user.username.is_empty() || user.password.is_empty() {
-        return Err(Error::InvalidArgument("Username and password should be nonempty".to_string()))
+        return Err(InvalidArgument("Username and password should be nonempty".to_string()))
     }
 
     /* create with password */
@@ -197,7 +209,7 @@ async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(use
         .bind(user.username)
         .bind(password_digest.to_string())
         .bind(role)
-        .bind(chrono::Utc::now().naive_utc())
+        .bind(Utc::now().naive_utc())
         .execute(handle.db())
         .await
         .map_err(|_| Error::ServerError("Could not create user".to_string()))?;
@@ -244,7 +256,7 @@ struct UserSetpasswordIn {
 }
 async fn user_set_password(State(handle): State<AppState>, _: RootAdminClaim, Json(user): Json<UserSetpasswordIn>) -> Result<(), Error> {
     if user.password.is_empty() {
-        return Err(Error::InvalidArgument("Password cannot be empty".to_string()))
+        return Err(InvalidArgument("Password cannot be empty".to_string()))
     }
 
     let salt = SaltString::generate(&mut OsRng);
@@ -282,7 +294,7 @@ async fn user_delete(State(handle): State<AppState>,  _: RootAdminClaim, Json(us
 
     /* cannot delete admin */
     if res != 0 {
-        return Err(Error::InvalidArgument("Cannot delete admin!".to_string()));
+        return Err(InvalidArgument("Cannot delete admin!".to_string()));
     }
 
     /* delete user from database */
@@ -323,26 +335,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
+    create_tables(&db).await;
 
-    sqlx::query("
-        CREATE TABLE IF NOT EXISTS
-        users (
-            id  BIGINT PRIMARY KEY NOT NULL,
-            username          TEXT NOT NULL UNIQUE,
-            password_digest   TEXT NOT NULL,
-            role            BIGINT NOT NULL,
-            creation_date     DATE NOT NULL
-        );"
-    )
-        .execute(&db).await.expect("Error creating initial table");
-
-    sqlx::query("
-        CREATE INDEX IF NOT EXISTS 
-        username_index ON users (username);"
-    )
-        .execute(&db).await.expect("Error creating initial index");
-
-    let state = AppState::new(db)?;
+    let state = AppState::new(Arc::new(db))?;
 
     let app = Router::new()
         .route("/auth/authorize", post(authorize))
@@ -367,4 +362,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
 
     Ok(())
+}
+
+async fn create_tables(db: &SqlitePool) {
+    db.execute("
+        CREATE TABLE IF NOT EXISTS
+        users (
+            id  BIGINT PRIMARY KEY NOT NULL,
+            username          TEXT NOT NULL UNIQUE,
+            password_digest   TEXT NOT NULL,
+            role            BIGINT NOT NULL,
+            creation_date     DATE NOT NULL
+        );"
+    )
+        .await.expect("Error creating initial table");
+
+    db.execute("
+        CREATE INDEX IF NOT EXISTS
+        username_index ON users(username);"
+    )
+        .await.expect("Error creating initial index");
 }

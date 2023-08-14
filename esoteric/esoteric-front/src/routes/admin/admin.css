@@ -10,12 +10,12 @@
 }
 .admin-form thead {
     font-family: var(--bold);
-    color: var(--ui1);
+    color: white;
 }
 
 .admin-form tbody {
     font-family: var(--light);
-    color: white;
+    color: var(--ui1);
 }
 
 .admin-users-uname {

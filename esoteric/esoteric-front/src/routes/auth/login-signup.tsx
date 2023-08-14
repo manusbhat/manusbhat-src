@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useState } from "react";
+import React, { FormEvent, ReactNode, useEffect, useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { AuthPage } from "./auth";
 import { UserState, login, useUser } from "../../framework/proxy";
@@ -471,6 +471,12 @@ function Window(props : {page: Page}) {
 
     const navigate = useNavigate();
     var current : ReactNode;
+
+    useEffect(() => {
+        if (unameDisattachedUser[0]) {
+            navigate("/");
+        }
+    }, [])
 
     switch (page) {
         case Page.Signup:

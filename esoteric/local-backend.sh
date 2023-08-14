@@ -11,10 +11,6 @@ cd ..
 sed 's/https:\/\/esoteric\.manubhat\.com/*/g' esoteric-back/api.esoteric.manubhat.com > /opt/homebrew/etc/nginx/servers/localhost
 nginx -s reload
 
-# stop servers
-for SERVICE in "${SERVICES[@]}"; do
-    pkill -f esoteric_$SERVICE || true
-done
 # start servers
 mkdir -p local
 
@@ -26,8 +22,16 @@ for SERVICE in "${SERVICES[@]}"; do
 
     cp esoteric-back/target/debug/esoteric_$SERVICE local/$SERVICE
 
-    cd local/$SERVICE
-    # do not redirect output
-    nohup ./esoteric_$SERVICE &>> log/$SERVICE.log &
-    cd ../..
+    if [ "$SERVICE" = "enss" ]; then
+        cp -r esoteric-back/enss/problem_sets local/enss
+        cp -r esoteric-back/enss/libgrade local/enss
+        mkdir -p local/enss/submissions
+    fi
 done
+
+COMMANDS=()
+for SERVICE in "${SERVICES[@]}"; do
+    COMMANDS+=("cd local/$SERVICE && ./esoteric_$SERVICE")
+done
+
+parallel --lb ::: "${COMMANDS[@]}" 

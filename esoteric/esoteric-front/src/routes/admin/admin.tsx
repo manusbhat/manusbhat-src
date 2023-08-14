@@ -27,20 +27,24 @@ function Users() {
         <div className="window-background admin-form">
             <table>
                 <thead>
-                    <td className="admin-users-uname">username</td>
-                    <td>id</td>
-                    <td>access</td>
+                    <tr>
+                        <td className="admin-users-uname">username</td>
+                        <td>id</td>
+                        <td>access</td>
+                    </tr>
                 </thead>
 
+                <tbody>
                 {usrs.map((u) => {
-                return (
-                    <tbody key={u.id}>
-                        <td className="admin-users-uname">{u.username}</td>
-                        <td>{u.id}</td>
-                        <td>{u.access}</td>
-                    </tbody>
-                )
-            })}
+                    return (
+                        <tr key={u.id}>
+                            <td className="admin-users-uname">{u.username}</td>
+                            <td>{u.id}</td>
+                            <td>{u.access}</td>
+                        </tr>
+                    )
+                })}
+                </tbody>
             </table>
            
         </div>
@@ -171,11 +175,11 @@ function CreateUser() {
             usernameField
             passwordField
             formSubmit={async (state, user) => {
-                return await authentication_request(user, "/auth/user", "POST", {
+                return await authentication_request(user, "/auth/user", "POST", JSON.stringify({
                     "username": state.username, 
                     "password": state.password,
                     "access": 0
-                });
+                }));
             }}
         />
     )
@@ -190,10 +194,10 @@ function UserUname() {
             usernameField
             newUsernameField
             formSubmit={async (state, user) => {
-                return await authentication_request(user, "/auth/user/username", "PUT", {
+                return await authentication_request(user, "/auth/user/username", "PUT", JSON.stringify({
                     "username": state.username, 
                     "new_username": state.newUsername,
-                });
+                }));
             }}
         />
     )
@@ -208,10 +212,10 @@ function UserPassword() {
             usernameField
             passwordField
             formSubmit={async (state, user) => {
-                return await authentication_request(user, "/auth/user/password", "PUT", {
+                return await authentication_request(user, "/auth/user/password", "PUT", JSON.stringify({
                     "username": state.username, 
                     "password": state.password,
-                });
+                }));
             }}
         />
     )

@@ -1,14 +1,14 @@
 use std::net::SocketAddr;
-use std::sync::Arc;
+
 
 use axum::{
-    routing::{get, post, delete}, 
-    Router, Extension, Json, middleware::AddExtension
+    routing::{get}, 
+    Router
 };
 
-use sqlx::{sqlite::SqlitePool, Pool, Sqlite};
-use serde::{Deserialize, Serialize};
-use esoteric_back::stats;
+
+
+use esoteric_back::handlers::stats;
 
 const DATABASE_URL: &str = "sqlite:esoteric.db";
 const PORT: u16 = 3194;
@@ -62,10 +62,6 @@ const PORT: u16 = 3194;
 //         .execute("DELETE FROM users WHERE username = ?")
 //         .await?;
 // }
-
-async fn status() -> &'static str {
-    "OK"
-}
 
 
 /* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */

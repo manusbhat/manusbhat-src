@@ -19,8 +19,36 @@
     overflow: hidden;
 }
 
+.ui-light-capsule {
+    color: black !important;
+    font-family: var(--bold) !important;
+    padding: 6px 10px !important;
+    border-radius: 500px;
+    border: none !important;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    min-width: max-content;
+
+    font-size: 14px;
+
+    filter: none; 
+
+    transition: all 0.3s;
+
+    overflow: hidden;
+}
+
 .ui-capsule:hover {
     box-shadow: 0px 4px 5px -4px black;
+
+    transform: scale(1.01);
+
+    transition-duration: 0.1s;
+}
+
+.ui-light-capsule:hover {
+    box-shadow: 0px 3px 5px -4px black;
 
     transform: scale(1.01);
 
@@ -32,6 +60,13 @@
     transform: scale(0.99);
 
     box-shadow: 0px 0px 10px -3px black;
+}
+
+.ui-light-capsule:active {
+    filter: saturate(0.6);
+    transform: scale(0.99);
+
+    box-shadow: 0px 0px 4px -3px black;
 }
 
 /* Button related items */

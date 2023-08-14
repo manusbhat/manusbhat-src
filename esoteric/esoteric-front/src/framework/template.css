@@ -2,15 +2,3 @@
 main {
     position: relative;
 }
-
-#template-background {
-    position: absolute;
-    top: -100px;
-
-    width: 100%;
-    height: calc(max(100vh, 100% + 100px));
-    max-height: calc(max(100vh, 100% + 100px));
-    max-width: 100%;
-
-    z-index: -1;
-}

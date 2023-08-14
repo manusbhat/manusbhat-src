@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 
 const EXPIRATION_BUFFER = 60; // 1 minute
 
@@ -29,7 +29,21 @@ export function useUser() {
 
 export type UserState = [user: UserHandle | null, setUser: (user: UserHandle | null) => void]
 
-export async function authentication_request(user: UserState, path: string, method: string, body?: any) {
+export async function request(path: string) {
+    try {
+        const res = await fetch(process.env.REACT_APP_API_URL + path);
+        if (res.ok) {
+            return res;
+        }
+        else {
+            throw new Error((await res.json()).error);
+        }
+    } catch (err: any) {
+        throw err
+    }
+}
+
+export async function authentication_request(user: UserState, path: string, method: string, body?: any, type: string | null = "application/json") {
     if (!user[0]) {
         throw new Error("user is null");
     }
@@ -39,7 +53,7 @@ export async function authentication_request(user: UserState, path: string, meth
         /* if refresh_token is about to expire, set user to null */
         if (user[0].refresh_exp < new Date().getTime() / 1000 - EXPIRATION_BUFFER) {
             user[1](null);
-            return;
+            throw new Error("refresh token expired");
         }
 
         try { 
@@ -56,35 +70,43 @@ export async function authentication_request(user: UserState, path: string, meth
 
             if (access.ok) {
                 const json = await access.json();
-                user[1]({
+                user[0] = {
                     id: user[0].id,
                     username: user[0].username,
                     access: json.access_token,
                     refresh: user[0].refresh,
-                    access_exp: json.access_claims.exp,
+                    access_exp: json.access_claim.exp,
                     refresh_exp: user[0].refresh_exp
-                })
+                }
+                user[1](user[0]);
             }
             else {
-                console.log("failed to refresh token");
-                return;
+                throw new Error("failed to refresh token");
             }
-        } catch {
-            console.log("failed to refresh token");
-            return;
+        } catch (err: any) {
+            throw err;
         }
     }
 
-
     try {
-        return await fetch(process.env.REACT_APP_API_URL + path, {
+        const headers = new Headers();
+        headers.append('Authorization', 'Bearer ' + user[0].access);
+        if (type) {
+            headers.append('Content-Type', type);
+        }
+
+        const res = await fetch(process.env.REACT_APP_API_URL + path, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + user[0].access
-            },
-            body: JSON.stringify(body)
+            headers: headers,
+            body: body
         })
+
+        if (res.ok) {
+            return res;
+        }
+        else {
+            throw new Error((await res.json()).error);
+        }
     } catch (err: any) {
         throw err
     }
@@ -94,12 +116,7 @@ export async function authentication_request(user: UserState, path: string, meth
 export async function users(user: UserState) {
     try {
         const result = await authentication_request(user, "/auth/users", "GET");
-        if (result?.ok) {
-            return await result.json() as User[];
-        }   
-        else {
-            throw Error((await result?.json()).error || "Failed to get users");
-        }
+        return await result.json() as User[];
     } catch (err: any) {
         throw err
     }
@@ -135,4 +152,10 @@ export async function login(user: UserState, username: string, password: string)
     } catch (err: any) {
         throw err
     }
+}
+
+export function useWorker(worker: () => void) {
+    useEffect(() => {
+        worker();
+    }, [])
 }

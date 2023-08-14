@@ -38,7 +38,7 @@ const routing_dicitionary: RoutingDictionary = {
         ]
     },
     "Tutoring" : {
-        href: "/tutoring",
+        href: "/tutoring/problem_set/Main%20Problem%20Set",
         submenu: [
         ]
     },
@@ -77,13 +77,18 @@ function Navbar(props: {active: string, setTheme: (theme: Theme) => void}) {
                     <Navitem title='Tutoring' active = {props.active}/>
                     <Navitem title='Synchronizers' active = {props.active}/>
                    
-                    {user[0] == null &&
-                        <span id="navbar-login">
+                    <span id="navbar-login">
+                        {user[0] == null 
+                            ? 
                             <Link className="ui-capsule ui-button-primary" to="/auth">
                                 Log In
                             </Link>
-                        </span>
-                    }
+                            : 
+                            <span className="ui-capsule ui-button-secondary" onClick={() => user[1](null)}>
+                                Log Out
+                            </span>
+                        }
+                    </span>
                 </ul>
 
             </span>

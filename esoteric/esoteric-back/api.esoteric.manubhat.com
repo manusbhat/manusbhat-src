@@ -1,8 +1,12 @@
+limit_req_zone $binary_remote_addr zone=mylimit:20m rate=50r/s;
+
 server {
 	server_name api.esoteric.manubhat.com localhost;
 	add_header Access-Control-Allow-Origin https://esoteric.manubhat.com always;
 	add_header Access-Control-Allow-Headers "Authorization, Origin, X-Requested-With, Content-Type, Accept" always;
     add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS, DELETE, PUT' always;
+
+    limit_req zone=mylimit burst=12;
 
     # all OPTIONS requests are auto passed because of CORS
     if ($request_method = OPTIONS ) {
