@@ -5,18 +5,19 @@
  * 
  */
 
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { StandardTemplate } from "../../framework/template";
 
 import "./index.css"
 import Section from "../../framework/section";
+import { useWorker } from "../../framework/proxy";
 
 function ActualStatus(props: {path: string, name: string}) {
     const [status, setStatus] = useState("ping");
     const [className, setClassName] = useState("index-status-loading")
 
-    useEffect(() => {
-        const worker = async () => {
+    useWorker(
+        async () => {
             var result;
             try {
                 result = await fetch(process.env.REACT_APP_API_URL + props.path);
@@ -35,9 +36,7 @@ function ActualStatus(props: {path: string, name: string}) {
                 setClassName("index-status-err");
             }
         }
-
-        worker();
-    }, [])
+    )
 
     return (
         <p className="index-status-subtitle">
@@ -53,8 +52,8 @@ function ActualStatus(props: {path: string, name: string}) {
 function Stats(props: {path: string, name: string}) {
     const [stats, setStats] = useState({"db_bytes": 0, "log_bytes": 0});
 
-    useEffect(() => {
-        const worker = async () => {
+    useWorker(
+        async () => {
             var result;
             try {
                 result = await fetch(process.env.REACT_APP_API_URL + props.path);
@@ -67,9 +66,7 @@ function Stats(props: {path: string, name: string}) {
                 setStats(json);
             }
         }
-
-        worker();
-    }, [])
+    )
 
     return (
         <p className="index-status-subtitle">
@@ -83,7 +80,6 @@ function Stats(props: {path: string, name: string}) {
             </strong>
         </p>
     )
-    
 }
 
 function Status(props: React.PropsWithChildren<{
@@ -94,6 +90,7 @@ function Status(props: React.PropsWithChildren<{
     stats?: string
     icon: string, 
 }>) {
+
     return (
         <div id={props.id} className="index-status window-background">
             <p className="index-status-title">{props.title}</p>

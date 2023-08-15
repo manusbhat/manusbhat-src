@@ -5,7 +5,7 @@
  * 
  */
 
-import React, { ReactNode, createRef, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import './globals.css'
 import './template.css'
@@ -13,7 +13,6 @@ import './template.css'
 import { Navbar, routing_dicitionary } from "./navbar";
 import Footer from "./footer";
 import { Sidebar, SidebarElement } from "./sidebar";
-import { AppStateContext, EsotericState, UserHandle } from "./proxy";
 
 enum Theme {
     LIGHT, DARK

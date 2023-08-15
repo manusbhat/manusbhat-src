@@ -40,14 +40,20 @@ fi
 
 mkdir stage
 
+# globals
 cp esoteric-back/api.esoteric.manubhat.com stage/
 cp esoteric-back/esoteric.manubhat.com stage/
 cp esoteric-back/server-update.sh stage/
 
+# build materials
 mkdir stage/esoteric-back
 cp esoteric-back/Cargo.toml stage/esoteric-back
 cp -r esoteric-back/src stage/esoteric-back
 
+# enss special
+cp -r esoteric-back/enss stage/esoteric-back
+
+#front 
 mv esoteric-front/build stage/static
 
 # 3. push local stage (see how to exclude .DS_Store?)

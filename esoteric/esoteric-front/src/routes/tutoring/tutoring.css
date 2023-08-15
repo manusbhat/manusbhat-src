@@ -31,7 +31,7 @@
     color: #e5e4e2;
 }
 .tutoring-rating-gold {
-    color: #ffd700;
+    color: #ecae3a;
 }
 .tutoring-rating-silver {
     color: #c0c0c0;
@@ -201,6 +201,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-top: 100px;
+}
+
+#tutoring-submission form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .tutoring-submission-inputs {
@@ -272,4 +279,51 @@
     width: 20px;
     text-align: right;
     margin: 0px 4px;
+    border: none;
+
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.tutoring-submission-close {
+    font-family: var(--comp-prog);
+}
+
+#tutoring-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    width: 300px;
+    margin: auto;
+}
+
+#tutoring-results label {
+    font-family: var(--comp-prog);
+    color: #FFF;
+    margin-top: 5px;
+}
+
+#tutoring-results input {
+    padding: 5px;
+    font-size: 15px;
+    font-family: var(--comp-prog);
+    border: solid 1px var(--accent);
+    border-radius: 5px;
+}
+
+#tutoring-results-table {
+    display: flex;
+    width: 600px;
+    margin: auto;
+    margin-top: 50px;
+}
+
+#tutoring-results-table h2, h3, h4 {
+    font-family: var(--bold);   
+    margin: 5px;
+}
+
+#tutoring-results-table h2 {
+    font-size: ;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { StandardTemplate } from "../../framework/template";
 import { UserState, authentication_request, request, useUser, useWorker } from "../../framework/proxy";
 import { Link, useParams } from "react-router-dom";
@@ -6,7 +6,6 @@ import { Markdown } from "../../framework/markdown";
 
 import "./tutoring.css"
 import { Separator } from "../../framework/separator";
-import { parse } from "path/win32";
 
 type TestCaseStatus = {
     status: number,
@@ -69,11 +68,35 @@ function TestCaseRow(props: { results: TestCaseStatus[] }) {
     )
 }
 
-function SubmissionRow(props: { id: number, index: number, results: TestCaseStatus[] }) {
+function SubmissionRow(props: { set: string, problem: string, id: number, index: number, results: TestCaseStatus[] }) {
+    const user = useUser();
+
+    const download = "/enss/problem_set/" + encodeURIComponent(props.set) +
+        "/problem/" + encodeURIComponent(props.problem) + 
+        "/submission/" + props.id;
+
     return (
         <tr className="tutoring-submission-row">
             <td>
-                <p className="tutoring-submission-index">
+                {/* TODO it is so stupid you need this to get around authentication headers, and the p button... */}
+                <p className="tutoring-submission-index" onClick={async () => {
+                    var response;
+                    try {
+                        response = await authentication_request(user, download, "GET")
+                    } catch (err: any) {
+                        console.log(err);
+                        return;
+                    }
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }}>
                     {props.index}
                 </p>
             </td>
@@ -85,13 +108,15 @@ function SubmissionRow(props: { id: number, index: number, results: TestCaseStat
     )
 }
 
-function Submissions(props: { submissions: { [submission_id: number]: TestCaseStatus[] } }) {
+function Submissions(props: { set: string, problem: string,  submissions: { [submission_id: number]: TestCaseStatus[] } }) {
     return (
         <table>
             <tbody>
                 {Object.keys(props.submissions).map(elem => parseInt(elem)).sort((a, b) => b - a).map((elem, index) =>
                     <SubmissionRow
                         key={elem}
+                        set={props.set}
+                        problem={props.problem}
                         id={elem}
                         index={Object.keys(props.submissions).length - index}
                         results={props.submissions[elem]}
@@ -126,6 +151,9 @@ function Submit(
                 try {
                     const res = await authentication_request(props.user, "/enss/results?problem=" + encodeURIComponent(props.problem), "GET");
                     const json = await res.json();
+                    if (!json.problem_sets[props.problem_set]) {
+                        return;
+                    }
                     const submissions = json.problem_sets[props.problem_set][props.problem][props.user[0].id];
                     setTestCases(submissions);
                 } catch (err: any) {
@@ -215,10 +243,10 @@ function Submit(
     };
 
     return (
-        <form id="tutoring-submission" onSubmit={submit}>
-
+        <div id="tutoring-submission" onSubmit={submit}>
+            
             {props.user[0] && (props.close === null || props.close > new Date()) &&
-                <>
+                <form>
                     <div className="tutoring-submission-inputs">
                         <label htmlFor="tutoring-submission-language">Language:</label>
                         <select title="language" id="tutoring-submission-language" onChange={(event) => {
@@ -239,19 +267,23 @@ function Submit(
                     <button type="submit" className="ui-button-secondary ui-light-capsule tutoring-submit">Submit</button>
 
                     <hr />
-                </>
+                </form>
             }
 
             {!props.user[0] &&
-                <p>*Log in to submit*</p>
+                <p className="tutoring-submission-close">*Log in to submit*</p>
             }
             
             {props.user[0] && props.close !== null && props.close < new Date() &&
-                <p>*Submissions closed*</p>
+                <p className="tutoring-submission-close">*Submissions closed*</p>
             }
 
-            <Submissions submissions={testCases} />
-        </form>
+            <Submissions 
+                set={props.problem_set}
+                problem={props.problem}
+                submissions={testCases} 
+                />
+        </div>
     )
 }
 
@@ -446,6 +478,134 @@ export function ProblemSetList() {
             </div>
 
             <List labels={problemSets} to={problemSets.map(elem => "problem_set/" + elem)} />
+        </StandardTemplate>
+    )
+}
+
+type ResultsQuery = {
+    [problem_set: string] : {
+        [problem: string]: {
+            [user: number]: {
+                [submission: number]: TestCaseStatus[]
+            }
+        }
+    }
+}
+
+
+function UserResults(props: { problem_set: string, problem: string, user: number, results: ResultsQuery }) {
+    return (
+        <div className="tutoring-results-user">
+            <h4>{props.user}</h4>
+
+            <Submissions
+                set={props.problem_set}
+                problem={props.problem}
+                submissions={props.results[props.problem_set][props.problem][props.user]}
+            />
+        </div>
+    )
+}
+
+function ProblemResults(props: { problem_set: string, problem: string, results: ResultsQuery }) {
+
+    return (
+        <div className="tutoring-results-problem">
+            <h3>{props.problem}</h3>
+
+            {Object.keys(props.results[props.problem_set][props.problem]).map(user =>
+                <UserResults
+                    key={user}
+                    problem_set={props.problem_set}
+                    problem={props.problem}
+                    user={parseInt(user)}
+                    results={props.results}
+                />
+            )}
+        </div>
+    )
+}
+
+function ProblemSetResults(props: { problem_set: string, results: ResultsQuery }) {
+    return (
+        <div className="tutoring-results-problem-set">
+
+            <h2>{props.problem_set}</h2>
+
+            {Object.keys(props.results[props.problem_set]).map(problem =>
+                <ProblemResults
+                    key={problem}
+                    problem_set={props.problem_set}
+                    problem={problem}
+                    results={props.results}
+                />
+            )}
+
+        </div>
+    )
+}
+
+export function Results() {
+    const [problemSet, setProblemSet] = useState("");
+    const [problem, setProblem] = useState("");
+    const [user, setUser] = useState<number | null>();
+
+    const realUser = useUser();
+
+    const [map, setMap] = useState<ResultsQuery>({});
+
+    async function query(event: React.FormEvent) {
+        event.preventDefault();
+
+        try {
+            const url =  "/enss/results" +
+                (problemSet ? "?problem_set=" + encodeURIComponent(problemSet) : "") + 
+                (problem ? "&problem=" + encodeURIComponent(problem)  : "") +
+                (user ? "&user=" + encodeURIComponent(user.toString()) : "");
+
+            const res = await authentication_request(realUser, url, "GET");
+            setMap((await res.json()).problem_sets);
+        }
+        catch (err: any) {
+            console.log(err);
+        }
+    }
+
+    return (
+        <StandardTemplate active='Tutoring' useStreaks={false} disableDots>
+            <h1>Results</h1>
+
+            <form id="tutoring-results" className="window-background" onSubmit={query}>
+                <label htmlFor="tutoring-results-problem-set">Problem Set:</label>
+                <input type="text" id="tutoring-results-problem-set" onChange={(event) => {
+                    setProblemSet(event.target.value);
+                }} />
+
+                <label htmlFor="tutoring-results-problem">Problem:</label>
+                <input type="text" id="tutoring-results-problem" onChange={(event) => {
+                    setProblem(event.target.value);
+                }} />
+
+                <label htmlFor="tutoring-results-user">User:</label>
+                <input type="text" id="tutoring-results-user" value={user || ""} onChange={(event) => {
+                    setUser(parseInt(event.target.value));
+                }} />
+
+                <input type="submit" value="Go" className="ui-light-capsule ui-button-primary tutoring-submit" />
+            </form>
+
+            <div id="tutoring-results-table">
+                {Object.keys(map).map(problem_set =>
+                    <ProblemSetResults
+                        key={problem_set}
+                        problem_set={problem_set}
+                        results={map}
+                        />
+                )}
+                {Object.keys(map).length === 0 &&
+                    <p>No results found</p>
+                }
+            </div>
         </StandardTemplate>
     )
 }

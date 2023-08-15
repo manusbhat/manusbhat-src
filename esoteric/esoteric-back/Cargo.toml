@@ -30,7 +30,6 @@ chrono = { version = "0.4.26", features = ["serde", "rustc-serialize"] }
 jsonwebtoken = "8.3.0"
 rand_core = { version = "0.6.4", features = ["std"] }
 serde = "1.0.178"
-serde_as = "0.0.1"
 serde_json = "1.0"
 sqlx = { version = "0.7.1", features = ["sqlite", "macros", "chrono", "runtime-tokio"] }
 tokio = { version = "1.29.1", features = ["full"] }

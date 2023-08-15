@@ -14,7 +14,7 @@ export function Markdown(props: { markdown: string, children: (headers: any, mdo
         var ok = false;
         if (line.startsWith("[") && line.endsWith("]")) {
             const tokens = line.slice(1, -1).split(":", 2).map(x => x.trim());
-            if (tokens.length == 2) {
+            if (tokens.length === 2) {
                 headers[tokens[0]] = tokens[1];
                 ok = true;
             }

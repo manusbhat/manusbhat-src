@@ -39,7 +39,7 @@
     flex-grow: 1;
 }
 
-#navbar-main > a {
+#navbar-title > a {
     font-family: var(--serif);
     font-size: 40px;
     color: #EEEEFF;
@@ -48,8 +48,21 @@
     text-decoration: none;
 
     margin-top: 5px;
+}
 
+#navbar-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
     flex-grow: 1;
+}
+
+#navbar-logo {
+    width: 50px;
+    height: 50px;
+    margin-left: 10px;
+    margin-top: 5px;
 }
 
 #nav-buttons {

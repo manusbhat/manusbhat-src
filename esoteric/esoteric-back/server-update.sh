@@ -9,10 +9,14 @@ cd ..
 
 find . -name ".DS_Store" -delete
 
+# enss special
+mv esoteric-back/enss enss
+
 for SERVICE in "${SERVICES[@]}"; do
     mkdir -p "$SERVICE"
     cp esoteric-back/target/release/esoteric_"$SERVICE" "$SERVICE"
 done
+
 cd ..
 
 ESOTERIC_ROOT=/var/www/esoteric
@@ -46,6 +50,12 @@ done
 for SERVICE in "${SERVICES[@]}"; do
     mkdir -p $ESOTERIC_ROOT/"$SERVICE"
     cp stage/"$SERVICE"/esoteric_"$SERVICE" $ESOTERIC_ROOT/"$SERVICE"
+  
+    if [ "$SERVICE" = "enss" ]; then
+        cp -r stage/"$SERVICE"/problem_sets $ESOTERIC_ROOT/"$SERVICE"
+        cp -r stage/"$SERVICE"/libgrade     $ESOTERIC_ROOT/"$SERVICE"
+        mkdir -p $ESOTERIC_ROOT/"$SERVICE"/submissions
+    fi
 done
 
 # load in environment variables (for signing secrets)
@@ -55,6 +65,7 @@ source $ESOTERIC_ROOT/.env
 for SERVICE in "${SERVICES[@]}"; do
     cd $ESOTERIC_ROOT/"$SERVICE"
     mkdir -p log
+
     nohup ./esoteric_"$SERVICE" &>> "log/$SERVICE".log &
 done
 

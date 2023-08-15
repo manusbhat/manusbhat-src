@@ -308,10 +308,10 @@ async fn submission_results(State(handle): State<AppState>,
             FROM test_case_results res
             INNER JOIN submissions sub  ON res.submission_id = sub.id
             INNER JOIN problems prb     ON sub.problem_id = prb.id
-                WHERE   (prb.problem_set_id = IFNULL(?, prb.problem_set_id))
-                    AND (sub.problem_id =     IFNULL(?, sub.problem_id))
-                    AND (sub.user_id =        IFNULL(?, sub.user_id))
-                    AND (sub.id =             IFNULL(?, sub.id));
+            WHERE   (prb.problem_set_id = IFNULL(?, prb.problem_set_id))
+                AND (sub.problem_id =     IFNULL(?, sub.problem_id))
+                AND (sub.user_id =        IFNULL(?, sub.user_id))
+                AND (sub.id =             IFNULL(?, sub.id));
             "
     )
         .bind(query.problem_set)
@@ -385,23 +385,27 @@ async fn problemset_submission_results(State(handle): State<AppState>,
 }
 
 /* file */
-async fn submission(State(handle): State<AppState>, Path(submission_id): Path<i32>)
+async fn submission(State(handle): State<AppState>, user: UserClaim, Path((_, _, submission_id)): Path<(ProblemSetID, ProblemID, SubmissionID)>)
     -> Result<impl IntoResponse, Error>
 {
-    let language = sqlx::query_as("SELECT language FROM submissions WHERE id = ?")
+    let (language, user_id) = sqlx::query_as("SELECT language, user_id FROM submissions WHERE id = ?")
         .bind(submission_id)
         .fetch_one(handle.db())
         .await
-        .map(|(str, ): (String, )| Language::from(&str).unwrap_or(Language::GPP))
+        .map(|(str, user): (String, UserID)| (Language::from(&str).unwrap_or(Language::GPP), user))
         .map_err(|_| ServerError("Could not query file language".to_string()))?;
 
-    let path = PROBLEM_SETS.to_string() + "/" + &submission_id.to_string() + "/main";
-    let body = fs::read_to_string(path)
-        .map_err(|_| InvalidArgument("Submission does not exist".to_string()))?;
+    if user_id != user.id() && user.access() == 0 {
+        return Err(InvalidArgument("You do not have access to this submission".to_string()));
+    }
+
+    let path = SUBMISSIONS.to_string() + "/" + &submission_id.to_string() + "/main." + &language.to_ext();
+    let body = fs::read_to_string(path.clone())
+        .map_err(|_| InvalidArgument("Submission does not exist".to_string() + &path))?;
 
     let headers = [
         (header::CONTENT_TYPE, "text/plain; charset=utf-8".to_string()),
-        (header::CONTENT_DISPOSITION, "attachment; filename=\"main.\"".to_string() + &language.to_db()),
+        (header::CONTENT_DISPOSITION, "attachment; filename=\"main.\"".to_string() + &language.to_ext()),
     ];
 
     Ok((headers, body))

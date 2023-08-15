@@ -2,7 +2,6 @@ import React, { FormEvent, ReactNode, useEffect, useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { AuthPage } from "./auth";
 import { UserState, login, useUser } from "../../framework/proxy";
-import { Button } from "../../framework/ui";
 
 import "./auth.css"
 import "../../framework/globals.css"

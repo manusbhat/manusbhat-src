@@ -99,16 +99,29 @@ pub async fn resync(db: &SqlitePool) {
             .expect("Could not insert problem set");
 
         for problem in problems {
+            let file_contents = fs::read_to_string(PROBLEM_SETS.to_string() + "/" + &problem_set + "/" + &problem + "/ok.cpp").unwrap();
+            let mut cached = false;
+            if let Ok(cache_contents) = fs::read_to_string(PROBLEM_SETS.to_string() + "/" + &problem_set + "/" + &problem + "/ok.cpp.cache") {
+                if file_contents == cache_contents {
+                    cached = true
+                }
+            }
+
             /* compile ok.cpp */
-            Command::new("g++")
-                .current_dir("./problem_sets/".to_string() + &problem_set + "/" + &problem)
-                .arg("-o").arg("ok.o")
-                .arg("-I").arg("../../../libgrade")
-                .arg("-std=c++20")
-                .arg("ok.cpp")
-                .status()
-                .await
-                .expect("Grader should be compilable");
+            if !cached {
+                Command::new("g++")
+                    .current_dir("./problem_sets/".to_string() + &problem_set + "/" + &problem)
+                    .arg("-o").arg("ok.o")
+                    .arg("-I").arg("../../../libgrade")
+                    .arg("-std=c++20")
+                    .arg("ok.cpp")
+                    .status()
+                    .await
+                    .expect("Grader should be compilable");
+
+                fs::copy("./problem_sets/".to_string() + &problem_set + "/" + &problem + "/ok.cpp",
+                         "./problem_sets/".to_string() + &problem_set + "/" + &problem + "/ok.cpp.cache").unwrap();
+            }
 
             let headers =
                 process_markup_meta(&(PROBLEM_SETS.to_string() + "/" + &problem_set + "/" + &problem + "/index.md"));

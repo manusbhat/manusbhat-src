@@ -69,7 +69,11 @@ function Navbar(props: {active: string, setTheme: (theme: Theme) => void}) {
             </button> */}
 
             <span id='navbar-main'> 
-                <HashLink to='/#index-section'>Esoteric</HashLink>
+                <span id="navbar-title">
+                    <HashLink to='/#index-section'>Esoteric</HashLink>
+                    <img id="navbar-logo" alt="Esoteric Logo" src="/svg/esoteric-flower.svg"/>
+                </span>
+
                 {/* separate buttons from title*/}
                 <ul id='nav-buttons'>  
                     {/* Listed in right first order */}

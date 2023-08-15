@@ -1,7 +1,7 @@
-import { FormEvent, useEffect, useState } from "react";
-import { User, UserState, authentication_request, useUser, users } from "../../framework/proxy";
+import { FormEvent, useState } from "react";
+import { User, UserState, authentication_request, useUser, useWorker, users } from "../../framework/proxy";
 import { StandardTemplate } from "../../framework/template";
-import { Form, FormError, FormField, SubmitField, TitledForm } from "../../framework/form";
+import { FormError, FormField, SubmitField, TitledForm } from "../../framework/form";
 
 import "./admin.css"
 import "../../framework/globals.css";
@@ -10,8 +10,8 @@ function Users() {
     const [usrs, setUsers] = useState<User[]>([]);
 
     const admin = useUser();
-    useEffect(() => {
-        const worker = async () => {
+    useWorker(
+        async () => {
             try {
                 const result = await users(admin);
                 setUsers(result);
@@ -19,9 +19,7 @@ function Users() {
                 console.log(e);
             }
         }
-
-        worker();
-    }, [])
+    )
 
     return (
         <div className="window-background admin-form">
@@ -35,15 +33,15 @@ function Users() {
                 </thead>
 
                 <tbody>
-                {usrs.map((u) => {
-                    return (
-                        <tr key={u.id}>
-                            <td className="admin-users-uname">{u.username}</td>
-                            <td>{u.id}</td>
-                            <td>{u.access}</td>
-                        </tr>
-                    )
-                })}
+                    {usrs.map((u) => {
+                        return (
+                            <tr key={u.id}>
+                                <td className="admin-users-uname">{u.username}</td>
+                                <td>{u.id}</td>
+                                <td>{u.access}</td>
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
            
@@ -238,12 +236,6 @@ function DeleteUser() {
 
 function UserOps() {
 
-    // list users
-    // change user password
-    // change user username
-    // create user
-    // delete user 
-
     return (
         <div id="admin-user-col">
             <h1>Users</h1>
@@ -255,15 +247,13 @@ function UserOps() {
         </div>
     )
 }
- 
-
 
 export default function Admin() {
     const user = useUser();
     const [usrs, setUsers] = useState<User[]>([]);
 
-    useEffect(() => {
-        const worker = async () => {
+    useWorker(
+        async () => {
             try {
                 const result = await users(user);
                 setUsers(result);
@@ -271,15 +261,11 @@ export default function Admin() {
                 console.log(e);
             }
         }
-
-        worker();
-    }, [])
+    )
 
     return (
         <StandardTemplate active='Admin' useStreaks={false}>
             <UserOps />
-            
-
         </StandardTemplate>
     )
 }

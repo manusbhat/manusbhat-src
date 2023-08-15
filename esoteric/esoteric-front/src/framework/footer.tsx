@@ -5,7 +5,6 @@
  * 
  */
 
-import { PropsWithChildren } from "react";
 import "./globals.css"
 import "./footer.css"
 import { PlainSeparator } from "./separator";
@@ -18,7 +17,7 @@ function Footer() {
             <PlainSeparator/>
 
             <p>
-                Last updated <span id="git-last-commit-date">August 05, 2023</span>. Copyright © Manu Bhat 2022-{new Date().getFullYear()}. All rights reserved.
+                Last updated <span id="git-last-commit-date">August 14, 2023</span>. Copyright © Manu Bhat 2022-{new Date().getFullYear()}. All rights reserved.
                 <br/>
                 Not rated for mobile.
             </p>

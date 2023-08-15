@@ -116,7 +116,7 @@ tuple<int, int, int> popen2(
 #ifdef __linux
         // give a bit more time than strictly necessary before timing out
         struct rlimit time_limit;
-        time_limit.rlim_cur = time_limit.rlim_max = 2 * (ms_limit + 999) / 1000;
+        time_limit.rlim_cur = time_limit.rlim_max = (ms_limit + 999) / 1000;
         setrlimit(RLIMIT_CPU, &time_limit);
 
         struct rlimit mem_limit;
@@ -127,7 +127,7 @@ tuple<int, int, int> popen2(
 #ifndef __linux
         // timeout (macOS)
         signal(SIGALRM, handle_timeout);
-        alarm(2 * (ms_limit + 999) / 1000);
+        alarm( (ms_limit + 999) / 1000);
 
         execl(arg, arg, NULL);
 #else
@@ -198,7 +198,7 @@ int main(int argc, char const* argv[]) {
         ipipe min(pout);
 
         auto start = std::chrono::high_resolution_clock::now();
-        bool const correct = ok(i, mout, min);
+        bool const correct = ok(i, mout, min) && !min.fail();
         auto finish = std::chrono::high_resolution_clock::now();
         auto ms = chrono::duration_cast<chrono::milliseconds>(finish - start);
 

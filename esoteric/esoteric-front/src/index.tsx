@@ -15,7 +15,7 @@ import Home from './routes/index/index';
 import { Login } from './routes/auth/login-signup';
 import Text from './routes/text/text';
 import Sync from './routes/sync/sync';
-import { ProblemSet, ProblemSetList, SingleProblem } from './routes/tutoring/tutoring';
+import { ProblemSet, ProblemSetList, Results, SingleProblem } from './routes/tutoring/tutoring';
 import Admin from './routes/admin/admin';
 import { AppStateContext, EsotericState, UserHandle } from './framework/proxy';
 import { PropsWithChildren, useState } from 'react';
@@ -58,6 +58,8 @@ root.render(
                         <Route index element={<ProblemSet />} />
                         <Route path="problem/:problem" element={<SingleProblem />} />
                     </Route>
+
+                    <Route path='results' element={<Results/>}/>
                 </Route>
 
                 <Route path="/auth" element={<Login />} />
