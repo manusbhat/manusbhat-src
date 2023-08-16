@@ -91,7 +91,7 @@ impl IntoResponse for Error {
 
 impl AppState {
     pub fn new(db: Arc<sqlite::SqlitePool>) ->  Result<AppState, env::VarError> {
-        let keyseed = env::var("ESOTERIC_AUTH_KEYSEED")?;
+        let keyseed = env::var("ESOTERIC_AUTH_KEYSEED").expect("ESOTERIC_AUTH_KEYSEED not set");
 
         let private_key = EncodingKey::from_secret(keyseed.as_bytes());
         let public_key  = DecodingKey::from_secret(keyseed.as_bytes());

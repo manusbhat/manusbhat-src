@@ -38,6 +38,7 @@ pub async fn execution_thread(_db: SqlitePool, mut rx: sync::mpsc::Receiver<Subm
 
                 // execute https://docs.rs/tokio/0.2.21/tokio/process/index.html
                 let loc = "../../problem_sets".to_string() + "/" + &problem_set_id + "/" + &problem_id + "/ok.o";
+
                 let mut res = match
                 Command::new(loc)
                     .current_dir("./submissions/".to_string() + "/" + &id.to_string())

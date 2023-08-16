@@ -83,14 +83,6 @@ impl RefreshClaim {
                     .as_secs()
         })
     }   
-
-    fn id(&self) -> i64 {
-        self.id
-    }
-
-    fn exp(&self) -> u64 {
-        self.exp
-    }
 }
 
 #[async_trait]

@@ -10,7 +10,8 @@ cd ..
 find . -name ".DS_Store" -delete
 
 # enss special
-mv esoteric-back/enss enss
+[ -d enss ] && rm -rf enss
+cp -r esoteric-back/enss .
 
 for SERVICE in "${SERVICES[@]}"; do
     mkdir -p "$SERVICE"
@@ -86,5 +87,11 @@ done
 cd /root
 rm -rf "$ESOTERIC_ROOT"/static
 cp -r stage/static "$ESOTERIC_ROOT" 
+
+# remove certain stage components to avoid duplicates
+rm -rf stage/static
+for SERVICE in "${SERVICES[@]}"; do
+    rm -rf stage/"$SERVICE"
+done
 
 echo "----FINISHED SERVER UPDATE----"

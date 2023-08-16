@@ -10,7 +10,7 @@ use axum::{
 
 use esoteric_back::handlers::stats;
 
-const DATABASE_URL: &str = "sqlite:esoteric.db";
+const DATABASE_URL: &str = "sqlite:text.db";
 const PORT: u16 = 3195;
 
 

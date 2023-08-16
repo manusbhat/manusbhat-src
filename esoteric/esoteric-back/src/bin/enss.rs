@@ -5,12 +5,12 @@ use std::io::Write;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::{routing::{get, post}, Router, Json, debug_handler};
+use axum::{routing::{get, post}, Router, Json};
 use axum::extract::{Path, State, Multipart, Query};
 use axum::http::{header};
 use axum::response::IntoResponse;
 
-use sqlx::{sqlite::SqlitePool, Sqlite, Executor, query_as};
+use sqlx::{sqlite::SqlitePool, Sqlite, query_as};
 use serde::{Deserialize, Serialize};
 use sqlx::migrate::MigrateDatabase;
 use ::chrono::{

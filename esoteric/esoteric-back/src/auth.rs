@@ -51,10 +51,6 @@ impl AdminClientClaim {
     pub fn access(&self) -> i64 {
         self.access
     }
-
-    pub fn exp(&self) -> u64 {
-        self.exp
-    }
 }
 
 pub type UserClaim = AdminClientClaim< { CLAIM_ZERO_ACCESS } >;

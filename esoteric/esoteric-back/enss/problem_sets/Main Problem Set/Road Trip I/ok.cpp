@@ -20,7 +20,7 @@ l solve(l G, l D, l N, const vl &x, const vl &c) {
 
    l j = -1;
    l cost = 0;
-   while (j != N)
+   while (j != N) {
        l x_pos = j == -1 ? 0 : x[j];
        l n = next[j + 1];
        l nx_pos = n == N ? D : x[n];

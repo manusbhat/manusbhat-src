@@ -249,20 +249,6 @@ function UserOps() {
 }
 
 export default function Admin() {
-    const user = useUser();
-    const [usrs, setUsers] = useState<User[]>([]);
-
-    useWorker(
-        async () => {
-            try {
-                const result = await users(user);
-                setUsers(result);
-            } catch (e) {
-                console.log(e);
-            }
-        }
-    )
-
     return (
         <StandardTemplate active='Admin' useStreaks={false}>
             <UserOps />

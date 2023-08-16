@@ -1,7 +1,8 @@
 
 /* kind of inefficient to be honest, but we don't have that many problems so this is a fine setup */
-/* also does not allow deletes or renames for now */
+/* also deletes and renames (for problems, problem_sets renames are fine) for now are kind of bad */
 use std::fs;
+use std::process::ExitStatus;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use sqlx::{Executor, SqlitePool};
 use tokio::process::Command;
@@ -109,7 +110,7 @@ pub async fn resync(db: &SqlitePool) {
 
             /* compile ok.cpp */
             if !cached {
-                Command::new("g++")
+                let status = Command::new("g++")
                     .current_dir("./problem_sets/".to_string() + &problem_set + "/" + &problem)
                     .arg("-o").arg("ok.o")
                     .arg("-I").arg("../../../libgrade")
@@ -118,6 +119,10 @@ pub async fn resync(db: &SqlitePool) {
                     .status()
                     .await
                     .expect("Grader should be compilable");
+
+                if !status.success() {
+                    panic!("Grader should be compilable");
+                }
 
                 fs::copy("./problem_sets/".to_string() + &problem_set + "/" + &problem + "/ok.cpp",
                          "./problem_sets/".to_string() + &problem_set + "/" + &problem + "/ok.cpp.cache").unwrap();

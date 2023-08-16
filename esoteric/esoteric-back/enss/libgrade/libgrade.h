@@ -7,6 +7,8 @@
 #include <bits/stdc++.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 #ifdef __linux
 #include <seccomp.h>
 #endif
@@ -114,24 +116,18 @@ tuple<int, int, int> popen2(
         dup2(pipe_stdout[1], STDOUT_FILENO);
 
 #ifdef __linux
-        // give a bit more time than strictly necessary before timing out
-        struct rlimit time_limit;
-        time_limit.rlim_cur = time_limit.rlim_max = (ms_limit + 999) / 1000;
-        setrlimit(RLIMIT_CPU, &time_limit);
-
         struct rlimit mem_limit;
         mem_limit.rlim_cur = mem_limit.rlim_max = kb_limit * 1024;
         setrlimit(RLIMIT_AS, &mem_limit);
 #endif
 
-#ifndef __linux
-        // timeout (macOS)
         signal(SIGALRM, handle_timeout);
         alarm( (ms_limit + 999) / 1000);
 
-        execl(arg, arg, NULL);
+#ifdef __linux
+        execl("/usr/bin/firejail", "/usr/bin/firejail", "--quiet", "--private", "--net=none", "--noroot", arg, NULL);
 #else
-        execl("firejail", "firejail", "--quiet", "--private", "--net=none", "--noroot", arg, NULL);
+        execl(arg, arg, NULL);
 #endif
 
         exit(-1);
@@ -176,6 +172,10 @@ int main(int argc, char const* argv[]) {
         if (system("g++ -O3 --std=c++20 -o main.o main.cpp &>/dev/null") != 0) {
             goto compilation_error;
         }
+        //linux is stupid for some reason, need this to reload the file cache?
+#ifdef __linux
+        sleep(4);
+#endif
     }
     else {
         goto compilation_error;
@@ -184,7 +184,7 @@ int main(int argc, char const* argv[]) {
     for (int i = 0; i < n; ++i) {
         srand(i + 2); // avoid special value
 
-        char const *command;
+        char const* command;
         if (!strcmp(language, GNU_GXX20)) {
             command = "./main.o";
         }
