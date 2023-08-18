@@ -44,7 +44,9 @@ const PROBLEM_SETS: &str = "problem_sets";
 const MAX_FILE_SIZE: usize = 16 * 1024;
 
 enum Language {
-    GPP
+    GPP,
+    Python,
+    Java
 }
 
 impl Language {
@@ -52,18 +54,28 @@ impl Language {
         if string == "GNU G++20" {
             return Ok(Language::GPP)
         }
+        else if string == "Python 3.11" {
+            return Ok(Language::Python)
+        }
+        else if string == "Java 17" {
+            return Ok(Language::Java)
+        }
         Err("Invalid language".to_string())
     }
 
     fn to_db(&self) -> &'static str {
         match self {
-            Language::GPP => "GNU G++20"
+            Language::GPP => "GNU G++20",
+            Language::Python => "Python 3.11",
+            Language::Java => "Java 17"
         }
     }
 
     fn to_ext(&self) -> &'static str {
         match self {
-            Language::GPP => "cpp"
+            Language::GPP => "cpp",
+            Language::Python => "py",
+            Language::Java => "java"
         }
     }
 }

@@ -10,7 +10,7 @@ server {
 		root /var/www/esoteric/static;
 		index index.html;
 
-		# try querying the path directly, otherwise fall back to index.html
+		# try querying the path directly, otherwise
 		try_files $uri $uri/ /index.html =404;
 	}
 }

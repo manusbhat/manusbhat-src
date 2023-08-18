@@ -8,6 +8,6 @@ long long solve(int G, int D, int N, const vector<int> &x, const vector<int> &y)
 
 }
 
-bool ok(int n, opipe& mout, ipipe& min) {
+bool ok(int n, opipe& out, ipipe& min) {
     return true;
 }

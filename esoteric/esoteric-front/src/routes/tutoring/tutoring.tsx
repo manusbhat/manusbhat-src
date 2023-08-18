@@ -149,7 +149,11 @@ function Submit(
         async () => {
             if (props.user[0]) {
                 try {
-                    const res = await authentication_request(props.user, "/enss/results?problem=" + encodeURIComponent(props.problem), "GET");
+                    const url = "/enss/results?" +
+                        ("problem=" + encodeURIComponent(props.problem))  +
+                        ("&user=" + encodeURIComponent(props.user[0].id.toString()));
+
+                    const res = await authentication_request(props.user, url, "GET");
                     const json = await res.json();
                     if (!json.problem_sets[props.problem_set]) {
                         return;
@@ -253,6 +257,8 @@ function Submit(
                             setType(event.target.value);
                         }}>
                             <option value="GNU G++20">GNU G++20</option>
+                            <option value="Java 17">Java 17</option>
+                            <option value="Python 3.11">Python 3.11</option>
                         </select>
                         <label htmlFor="tutoring-submission-file">File:</label>
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} id="tutoring-submission-file" />
@@ -276,6 +282,10 @@ function Submit(
             
             {props.user[0] && props.close !== null && props.close < new Date() &&
                 <p className="tutoring-submission-close">*Submissions closed*</p>
+            }
+
+            {type === "Java 17" &&
+                <p className="tutoring-submission-close"> Java submissions must be <br/> named main.java (case sensitive)! </p>
             }
 
             <Submissions 
@@ -306,7 +316,7 @@ function List(props: { labels: string[], to: string[], rating?: number[], result
                             </Link>
                         </td>
 
-                        <td>
+                        <td className="tutoring-list-test-cases">
                             {props.results && props.results[elem] && TestCaseRow({ results: props.results[elem] })}
                         </td>
 
@@ -557,9 +567,11 @@ export function Results() {
     async function query(event: React.FormEvent) {
         event.preventDefault();
 
+        console.log("Called");
+
         try {
-            const url =  "/enss/results" +
-                (problemSet ? "?problem_set=" + encodeURIComponent(problemSet) : "") + 
+            const url =  "/enss/results?" +
+                (problemSet ? "&problem_set=" + encodeURIComponent(problemSet) : "") + 
                 (problem ? "&problem=" + encodeURIComponent(problem)  : "") +
                 (user ? "&user=" + encodeURIComponent(user.toString()) : "");
 
@@ -588,7 +600,8 @@ export function Results() {
 
                 <label htmlFor="tutoring-results-user">User:</label>
                 <input type="text" id="tutoring-results-user" value={user || ""} onChange={(event) => {
-                    setUser(parseInt(event.target.value));
+                    if (event.target.value === "") setUser(null);
+                    else setUser(parseInt(event.target.value));
                 }} />
 
                 <input type="submit" value="Go" className="ui-light-capsule ui-button-primary tutoring-submit" />

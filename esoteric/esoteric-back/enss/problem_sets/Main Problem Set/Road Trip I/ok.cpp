@@ -26,9 +26,9 @@ l solve(l G, l D, l N, const vl &x, const vl &c) {
        l nx_pos = n == N ? D : x[n];
        l dist = nx_pos - x_pos;
        if (j == -1 && dist > G) return -1;
-       cost += max(0ll, (dist - G) * (j == -1 ? 0 : c[j]));
-       G = max(G, dist) - dist;
-
+       l delta = max(0ll, dist - G);
+       cost += delta * (j == -1 ? 0 : c[j]);
+       G = G + delta - dist;
 
        j = n;
    }
@@ -36,16 +36,16 @@ l solve(l G, l D, l N, const vl &x, const vl &c) {
    return cost;
 }
 
-bool ok(int n, opipe& mout, ipipe& min) {
+bool ok(int n, opipe& out, ipipe& in) {
     l G, D, N;
 
-    N = randl(1, 2500);
-    D = randl(1, 1e9);
+    N = randl(1000, 2500);
+    D = randl(N + 100, 1e9);
 
     sl xs = randsl(N, 1, D);
     vl x = sltovl(xs);
 
-    if (n == 6) G = x.back() + 5;
+    if (n == 6) G = D + 5;
     else if (n == 7) G = 0;
     else if (n == 8) G = x[0] - 1;
     else if (n == 9) G = x[0];
@@ -56,15 +56,15 @@ bool ok(int n, opipe& mout, ipipe& min) {
         c = vl(N, 1);
     }
     else if (n == 1) {
-        c = vl(N, 1e6);
+        c = vl(N, 1e4);
     }
     else if (n == 2) {
         c = vl(N, 1);
-        c[0] = 1e6;
+        c[0] = 1e4;
     }
     else if (n == 3) {
         c = vl(N, 1);
-        c.back() = 1e6;
+        c.back() = 1e4;
     }
     else if (n == 4) {
         c = vl(N, 1);
@@ -75,15 +75,16 @@ bool ok(int n, opipe& mout, ipipe& min) {
         iota(all(c), 1);
         reverse(all(c));
     }
-    else c = randvl(N, 1, 1e6);
+    else c = randvl(N, 1, 1e4);
 
-    mout << G << " " << D << " " << N << endl;
+    out << G << " " << D << " " << N << '\n';
     for (int i = 0; i < N; ++i) {
-        mout << x[i] << " " << c[i] << endl;
+        out << x[i] << " " << c[i] << '\n';
     }
+    out.flush();
 
     l ans, correct;
-    min >> ans;
+    in >> ans;
     correct = solve(G, D, N, x, c);
 
     return ans == correct;

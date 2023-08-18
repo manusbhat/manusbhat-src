@@ -2,8 +2,11 @@
 // Created by Manu Bhat on 8/8/23.
 //
 
+// UPDATES TO ANY LIBGRADE REQUIRE A FULL CLEAN OF GRADER CACHES
+
 #pragma once
 
+#include <fcntl.h>
 #include <bits/stdc++.h>
 #include <unistd.h>
 #include <sys/resource.h>
@@ -15,15 +18,13 @@
 
 using namespace std;
 
-/* helper methods for generating test cases */
-#include "tcutil.h"
 
 /* io based off of {https://stackoverflow.com/a/33759060}, adapted to process fds */
-constexpr int buffer_size = 2048;
-constexpr int read_size   = 2048;
+constexpr int buffer_size = 1 << 10; // 512kb
+constexpr int read_size   = 1024;
 class stdiobuf: public streambuf {
-    char obuffer[buffer_size];
-    char ibuffer[buffer_size];
+    char* obuffer;
+    char ibuffer[read_size];
     int fp;
 
     int overflow(int c) {
@@ -64,12 +65,14 @@ class stdiobuf: public streambuf {
 
 public:
     stdiobuf(int fp) : fp(fp) {
-        this->setp(this->obuffer, this->obuffer + buffer_size);
+        this->obuffer = new char[buffer_size];
+        this->setp(this->obuffer, this->obuffer + buffer_size - 1);
         this->setg(this->ibuffer, this->ibuffer, this->ibuffer);
     }
 
     ~stdiobuf() {
         this->sync();
+        delete[] this->obuffer;
         close(this->fp);
     }
 };
@@ -90,13 +93,23 @@ public:
     }
 };
 
+
+/* internal helpers */
+#define RESULT(num, status, memory, time) cout << num << " " << status << " " << memory << " " << time << endl
+#define GNU_GXX20 "GNU G++20"
+#define PYTHON3 "Python 3.11"
+#define JAVA17 "Java 17"
+
+static int pin; // for child process (process_in)
+static char dump[buffer_size];
 void handle_timeout(int signum) {
+    while (read(pin, dump, buffer_size) == buffer_size); // allow buffer to proceed
     exit(-1);
 }
 
 // https://github.com/vi/syscall_limiter/blob/master/writelimiter/popen2.c
 tuple<int, int, int> popen2(
-        char const *arg,
+        char const *language,
         int kb_limit,
         int ms_limit
 ) {
@@ -110,6 +123,7 @@ tuple<int, int, int> popen2(
         // map stdin to pipe we just created
         close(pipe_stdin[1]);
         dup2(pipe_stdin[0], STDIN_FILENO);
+        pin = pipe_stdin[0];
 
         // map stdout
         close(pipe_stdout[0]);
@@ -121,14 +135,31 @@ tuple<int, int, int> popen2(
         setrlimit(RLIMIT_AS, &mem_limit);
 #endif
 
+        struct rlimit stack_limit;
+        stack_limit.rlim_cur = stack_limit.rlim_max = kb_limit * 1024;
+        setrlimit(RLIMIT_STACK, &stack_limit);
+
         signal(SIGALRM, handle_timeout);
-        alarm( (ms_limit + 999) / 1000);
+        alarm( (ms_limit + 1000) / 1000); // give an extra second to avoid slight discrpenacies
 
 #ifdef __linux
-        execl("/usr/bin/firejail", "/usr/bin/firejail", "--quiet", "--private", "--net=none", "--noroot", arg, NULL);
+#define SANDBOX "/usr/bin/firejail", "/usr/bin/firejail", "--quiet", "--private", "--net=none", "--noroot"
+#define EXECL(command, ...) execl(SANDBOX, command, __VA_ARGS__);
 #else
-        execl(arg, arg, NULL);
+        /* macos */
+#define EXECL(command, ...) execl(command, command, __VA_ARGS__);
 #endif
+
+        if (!strcmp(language, GNU_GXX20)) {
+            EXECL("./main.o", NULL);
+        }
+        else if (!strcmp(language, JAVA17)) {
+            // stack size set to 64 mb, should be enough generally
+            EXECL("/usr/bin/java", "-Xss64m", "main", NULL);
+        }
+        else if (!strcmp(language, PYTHON3)) {
+            EXECL("/usr/bin/python3", "main.py", NULL);
+        }
 
         exit(-1);
     }
@@ -142,11 +173,8 @@ tuple<int, int, int> popen2(
 
 /* abstract methods */
 int num(void);
-bool ok(int n, opipe& mout, ipipe& min);
+bool ok(int n, opipe& out, ipipe& min);
 
-/* internal helpers */
-#define RESULT(num, status, memory, time) cout << num << " " << status << " " << memory << " " << time << endl
-#define GNU_GXX20 "GNU G++20"
 
 /* language, mb_limit, ms_limit */
 enum _status {
@@ -164,18 +192,33 @@ int main(int argc, char const* argv[]) {
     int const kb_limit = atoi(argv[2]);
     int const ms_limit = atoi(argv[3]);
 
+    // in case we go past the buffer...
+    signal(SIGPIPE, SIG_IGN);
+
     int const n = num();
     cout << n << endl;
 
     if (!strcmp(language, GNU_GXX20)) {
         /* compile */
-        if (system("g++ -O3 --std=c++20 -o main.o main.cpp &>/dev/null") != 0) {
+        if (system("g++ -O3 --std=c++20 -o main.o main.cpp >/dev/null") != 0) {
             goto compilation_error;
         }
         //linux is stupid for some reason, need this to reload the file cache?
 #ifdef __linux
         sleep(4);
 #endif
+    }
+    else if (!strcmp(language, JAVA17)) {
+        if (system("javac main.java >/dev/null") != 0) {
+            goto compilation_error;
+        }
+
+#ifdef __linux
+        sleep(4);
+#endif
+    }
+    else if (!strcmp(language, PYTHON3)) {
+        /* no compilation required */
     }
     else {
         goto compilation_error;
@@ -184,21 +227,13 @@ int main(int argc, char const* argv[]) {
     for (int i = 0; i < n; ++i) {
         srand(i + 2); // avoid special value
 
-        char const* command;
-        if (!strcmp(language, GNU_GXX20)) {
-            command = "./main.o";
-        }
-        else {
-            goto compilation_error;
-        }
-
         int pin, pout, pid;
-        tie(pin, pout, pid) = popen2(command, kb_limit, ms_limit);
-        opipe mout(pin);
+        tie(pin, pout, pid) = popen2(language, kb_limit, ms_limit);
+        opipe out(pin);
         ipipe min(pout);
 
         auto start = std::chrono::high_resolution_clock::now();
-        bool const correct = ok(i, mout, min) && !min.fail();
+        bool const correct = ok(i, out, min) && !min.fail();
         auto finish = std::chrono::high_resolution_clock::now();
         auto ms = chrono::duration_cast<chrono::milliseconds>(finish - start);
 
@@ -224,6 +259,7 @@ int main(int argc, char const* argv[]) {
                 RESULT(i, _SUCCESS, kb, ms.count());
             }
             else if (!WIFEXITED(sp_status) || WEXITSTATUS(sp_status) != 0) {
+                cerr << "Runtime status: " << WTERMSIG(sp_status) << endl;
                 RESULT(i, _RUNTIME_ERROR, 0, 0);
             }
             else {
@@ -244,3 +280,6 @@ compilation_error:
 
 #undef GNU_GXX20
 #undef RESULT
+
+/* helper methods for generating test cases */
+#include "tcutil.h"

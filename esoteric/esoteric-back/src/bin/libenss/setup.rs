@@ -2,7 +2,6 @@
 /* kind of inefficient to be honest, but we don't have that many problems so this is a fine setup */
 /* also deletes and renames (for problems, problem_sets renames are fine) for now are kind of bad */
 use std::fs;
-use std::process::ExitStatus;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use sqlx::{Executor, SqlitePool};
 use tokio::process::Command;

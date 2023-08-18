@@ -12,6 +12,10 @@
     font-family: var(--comp-prog);
 }
 
+.tutoring-list-test-cases {
+    text-align: right;
+}
+
 .tutoring-list tr {
     border-bottom: solid 1px #CCCCCC;
 }
@@ -322,8 +326,4 @@
 #tutoring-results-table h2, h3, h4 {
     font-family: var(--bold);   
     margin: 5px;
-}
-
-#tutoring-results-table h2 {
-    font-size: ;
 }
