@@ -37,6 +37,16 @@ void bin_jump_precomp(l n, l p, l k) {
     }
 }
 
+l jump(l n, l amount) {
+    for (int i = 0; i < 20; ++i) {
+        if (amount & (1 << i)) {
+            n = up[n][i];
+        }
+    }
+
+    return n;
+}
+
 l lca(l a, l b) {
     if (depth[a] > depth[b]) a = jump(a, depth[a] - depth[b]);
     if (depth[b] > depth[a]) b = jump(b, depth[b] - depth[a]);

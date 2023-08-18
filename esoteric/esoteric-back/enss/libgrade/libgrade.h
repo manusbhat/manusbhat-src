@@ -130,6 +130,12 @@ tuple<int, int, int> popen2(
         dup2(pipe_stdout[1], STDOUT_FILENO);
 
 #ifdef __linux
+        // map stderr (on macos keep it for debug)
+        freopen("/dev/null", "w", stderr);
+#endif
+
+
+#ifdef __linux
         struct rlimit mem_limit;
         mem_limit.rlim_cur = mem_limit.rlim_max = kb_limit * 1024;
         setrlimit(RLIMIT_AS, &mem_limit);

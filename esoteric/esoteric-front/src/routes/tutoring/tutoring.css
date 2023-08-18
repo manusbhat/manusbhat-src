@@ -13,7 +13,8 @@
 }
 
 .tutoring-list-test-cases {
-    text-align: right;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .tutoring-list tr {
