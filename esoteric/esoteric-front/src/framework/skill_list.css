@@ -179,18 +179,24 @@
 
 .skill-inline-title {
    font-family: var(--bold);
-   color: var(--accent1);
+   color: gold;
    margin: 0px;
 }
 
 .skill-inline-text {
    font-family: var(--light);
-   color: var(--text);
+   color: white;
 
+   text-decoration: none;
    display: inline-block;
 
    margin: 0 5px 0;
    padding: 0;
+}
+
+a.skill-inline-text:active, a.skill-inline-text:hover {
+   color: var(--link);
+   text-decoration: underline;
 }
 
 .skill-inline-image {

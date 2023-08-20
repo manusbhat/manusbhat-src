@@ -55,8 +55,11 @@ pub async fn execution_thread(_db: SqlitePool, mut rx: sync::mpsc::Receiver<Subm
                 let mut reader = BufReader::new(res.stdout.take().unwrap())
                     .lines();
                 tokio::spawn(async move {
-                    let _ = res.wait().await
+                    let status = res.wait().await
                         .expect("child process encountered an error");
+                    if !status.success() {
+                        panic!("child process exited with status {:?}", status.code());
+                    }
                 });
 
                 /* number of test cases */

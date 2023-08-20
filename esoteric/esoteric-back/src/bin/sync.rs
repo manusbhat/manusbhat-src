@@ -1,93 +1,103 @@
+use std::error::Error;
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 
 use axum::{
     routing::{get}, 
     Router
 };
+use serde::{Deserialize, Serialize};
+use sqlx::migrate::MigrateDatabase;
+use sqlx::{Executor, Sqlite, SqlitePool};
+use tower_http::trace::TraceLayer;
 
 
-
-use esoteric_back::handlers::stats;
+use esoteric_back::handlers::{stats, status};
+use esoteric_back::logging::init_log;
+use esoteric_back::state::AppState;
 
 const DATABASE_URL: &str = "sqlite:sync.db";
 const PORT: u16 = 3194;
 
+#[derive(Debug, Serialize, Deserialize)]
+struct SlaveToken {
+    token_id: i32,
+    container: String
+}
 
-// struct State {
-//     // db_pool: sqlx::sqlite::SqlitePool,
-//     public_key: i32,
-//     public_value: i32
+mod nutq {
+    // nutq needs special functions
+    async fn on_master_update() {
+        // based on json
+    }
+
+    async fn handle_notifications() {
+
+    }
+}
+//
+// async fn get_slave() -> Result<> {
+//
 // }
-
-// enum AuthError {
-//     InvalidCredentials(),
-//     InvalidToken(),
-
-//     SQLError(sqlx::Error),
+//
+// async fn continue_slave() {
+//
 // }
-
-// type Username = String;
-
-// #[derive(Deserialize, Serialize)]
-// struct UserCredentials {
-//     username: Username,
-//     password: String,
-//     access: i32
+//
+// async fn rescind_slave() {
+//
 // }
-
-// async fn seed_token(handle: Extension<Arc<State>>) {
-//     /* verify user password for username */
-
-//     /* sign refresh token and current token */
-// }
-
-// async fn refresh_token(handle: Extension<Arc<State>>) {
-//     /* verify refresh token */
-
-//     /* ensure has not been deleted */
-
-//     /* sign token */
-// }
-
-// async fn user_create(Json(user): Json<UserCredentials>, handle: Extension<Arc<State>>) -> Result<(), AuthError> {
-//     /* create with password */
-//     handle.db_pool.execute("INSERT INTO users (username, password) VALUES (?, ?)", user.username, user.password)
-//         .await?;
-// }
-
-// async fn user_delete(Json(user): Json<Username>, handle: Extension<Arc<State>>) -> Result<(), AuthError> {
-//     /* delete user from database */
-//     handle.db_pool
-//         .execute("DELETE FROM users WHERE username = ?")
-//         .await?;
-// }
-
+//
 
 /* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
 #[tokio::main]
-async fn main() {
-    // let state = Arc::new(State {
-    //     db_pool: sqlx::sqlite::SqlitePoolOptions::new()
-    //         .await
-    //         .unwrap(),
-    //     public_key: 0,
-    //     public_value: 0
-    // });
+async fn main() -> Result<(), Box<dyn Error>> {
+    init_log();
+
+    if !Sqlite::database_exists(DATABASE_URL).await.expect("Error checkin") {
+        Sqlite::create_database(DATABASE_URL).await.expect("Error creating database");
+    }
+
+    let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
+    create_tables(&db).await;
+
+    let state = AppState::new(Arc::new(db))?;
 
     let app = Router::new()
-    //     .route("/authorize", post(seed_token))
-    //     .route("/reauthorize", get(refresh_token))
-    //     .route("/user", post(user_create))
-    //     .route("/user", delete(user_delete))
-        // .route("/status", get(status));
-            .route("/sync/stats", get(stats));
-        // .layer(AddExtension::new(state));
+        /* health functions */
+        .route("/sync/status", get(status))
+        .route("/sync/stats", get(stats))
+        .with_state(state)
+        .layer(TraceLayer::new_for_http());
 
-    /* localhost:3000 */
     let addr = SocketAddr::from(([127, 0, 0, 1], PORT));
+
+    println!("sync::init");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
+
+    Ok(())
+}
+
+async fn create_tables(db: &SqlitePool) {
+    db.execute("
+        CREATE TABLE IF NOT EXISTS
+        users (
+            id  BIGINT PRIMARY KEY NOT NULL,
+            username          TEXT NOT NULL UNIQUE,
+            password_digest   TEXT NOT NULL,
+            role            BIGINT NOT NULL,
+            creation_date     DATE NOT NULL
+        );"
+    )
+        .await.expect("Error creating initial table");
+
+    db.execute("
+        CREATE INDEX IF NOT EXISTS
+        username_index ON users(username);"
+    )
+        .await.expect("Error creating initial index");
 }

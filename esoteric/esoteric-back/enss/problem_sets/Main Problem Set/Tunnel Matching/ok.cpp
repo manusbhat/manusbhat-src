@@ -1,6 +1,6 @@
 #include "libgrade.h"
 
-int num(void) {
+int init(void) {
     return 12;
 }
 

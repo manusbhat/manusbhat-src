@@ -26,6 +26,10 @@ for SERVICE in "${SERVICES[@]}"; do
         cp -r esoteric-back/enss/problem_sets local/enss
         cp -r esoteric-back/enss/libgrade local/enss
         mkdir -p local/enss/submissions
+    elif [ "$SERVICE" = "text" ]; then
+        rm -rf local/text/tags
+
+        cp -r esoteric-back/text/tags local/text
     fi
 done
 

@@ -53,10 +53,13 @@ cp -r esoteric-back/src stage/esoteric-back
 # enss special
 cp -r esoteric-back/enss stage/esoteric-back
 
+# text special
+cp -r esoteric-back/text stage/esoteric-back
+
 #front 
 mv esoteric-front/build stage/static
 
-# 3. push local stage (see how to exclude .DS_Store?)
+# 4. push local stage (see how to exclude .DS_Store?)
 scp -r stage root@esoteric.manubhat.com:/root/
 
 echo "----Finished Staging (remember to manually deploy)----"

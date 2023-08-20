@@ -41,6 +41,7 @@
 
     width: calc(min(100vw - 20px, 350px));
     box-sizing: border-box;
+    background-color: var(--ui-baked) !important;
 
     box-shadow: 0px 0px 10px -2px black;
 }

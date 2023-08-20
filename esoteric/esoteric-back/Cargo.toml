@@ -24,6 +24,7 @@ name = "esoteric_enss"
 path = "src/bin/enss.rs"
 
 [dependencies]
+a2 = "0.7.1"
 argon2 = "0.5.1" 
 axum = { version = "0.6.19", features = ["headers", "macros", "multipart"] }
 chrono = { version = "0.4.26", features = ["serde", "rustc-serialize"] }
@@ -35,6 +36,6 @@ sqlx = { version = "0.7.1", features = ["sqlite", "macros", "chrono", "runtime-t
 tokio = { version = "1.29.1", features = ["full"] }
 tokio-stream = "0.1.14"
 tokio-util = { version= "0.7.8", features = ["codec", "io"]}
-tower-http = { version = "0.4.3", features = ["trace"] }
+tower-http = { version = "0.4.3", features = ["trace", "fs"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"

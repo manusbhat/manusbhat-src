@@ -98,8 +98,8 @@ section {
 }
 
 .window-background {
-  background-color: var(--ui);
-  backdrop-filter: blur(3px);
+  background-color: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(5px) contrast(0.8) brightness(0.9) hue-rotate(05deg);
   border: solid 0.75px #444;
   border-radius: 7px;
   box-shadow: 0px 0px 1px 0.2px #000000;

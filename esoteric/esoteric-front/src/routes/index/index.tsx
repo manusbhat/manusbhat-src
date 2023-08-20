@@ -18,23 +18,16 @@ function ActualStatus(props: {path: string, name: string}) {
 
     useWorker(
         async () => {
-            var result;
             try {
-                result = await fetch(process.env.REACT_APP_API_URL + props.path);
+                const result = await fetch(process.env.REACT_APP_API_URL + props.path);
+                setStatus(result.status + " OK");
+                setClassName("index-status-ok");
             } catch (e) {
                 setStatus("501 ERR");
                 setClassName("index-status-err"); 
                 return;
             }
 
-            if (result.ok) {
-                setStatus(result.status + " OK");
-                setClassName("index-status-ok");
-            }
-            else {
-                setStatus(result.status + " ERR");
-                setClassName("index-status-err");
-            }
         }
     )
 
@@ -54,16 +47,12 @@ function Stats(props: {path: string, name: string}) {
 
     useWorker(
         async () => {
-            var result;
             try {
-                result = await fetch(process.env.REACT_APP_API_URL + props.path);
-            } catch (e) {
-                return;
-            }
-
-            if (result.ok) {
+                const result = await fetch(process.env.REACT_APP_API_URL + props.path);
                 const json = await result.json();
                 setStats(json);
+            } catch (e) {
+                return;
             }
         }
     )

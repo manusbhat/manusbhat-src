@@ -206,7 +206,7 @@ function Submit(
             const id = (await res.json()).id
             setTestCases({ [id]: [], ...testCases });
 
-            var refreshIntervalId: NodeJS.Timer;
+            var refreshIntervalId: NodeJS.Timeout;
             function requery() {
                 if (props.user[0]) {
                     authentication_request(props.user, "/enss/results?submission=" + encodeURIComponent(id), "GET")
@@ -364,7 +364,6 @@ export function SingleProblem() {
     )
 
     // submissions
-
     return (
         <StandardTemplate active='Tutoring' useStreaks={false} disableDots>
 

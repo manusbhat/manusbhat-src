@@ -7,11 +7,16 @@ cd stage/esoteric-back
 cargo build --release 
 cd ..
 
+# reformat stage
 find . -name ".DS_Store" -delete
 
 # enss special
 [ -d enss ] && rm -rf enss
 cp -r esoteric-back/enss .
+
+# text special
+[ -d text ] && rm -rf text
+cp -r esoteric-back/text .
 
 for SERVICE in "${SERVICES[@]}"; do
     mkdir -p "$SERVICE"
@@ -20,9 +25,9 @@ done
 
 cd ..
 
+# mark if we need to update nginx config
 ESOTERIC_ROOT=/var/www/esoteric
 
-# mark if we need to update nginx config
 NEW_WWW_CONFIG=./stage/esoteric.manubhat.com
 OLD_WWW_CONFIG=$ESOTERIC_ROOT/esoteric.manubhat.com
 NEW_API_CONFIG=./stage/api.esoteric.manubhat.com
@@ -47,15 +52,17 @@ for SERVICE in "${SERVICES[@]}"; do
     pkill -f esoteric_"$SERVICE" || true
 done
 
-## binaries
+## binaries (and supplementary content)
 for SERVICE in "${SERVICES[@]}"; do
     mkdir -p $ESOTERIC_ROOT/"$SERVICE"
     cp stage/"$SERVICE"/esoteric_"$SERVICE" $ESOTERIC_ROOT/"$SERVICE"
   
     if [ "$SERVICE" = "enss" ]; then
-        cp -r stage/"$SERVICE"/problem_sets $ESOTERIC_ROOT/"$SERVICE"
-        cp -r stage/"$SERVICE"/libgrade     $ESOTERIC_ROOT/"$SERVICE"
+        cp -r stage/enss/problem_sets $ESOTERIC_ROOT/enss
+        cp -r stage/enss/libgrade     $ESOTERIC_ROOT/enss
         mkdir -p $ESOTERIC_ROOT/"$SERVICE"/submissions
+    elif [ "$SERVICE" = "text" ]; then
+        cp -r stage/text/tags $ESOTERIC_ROOT/text
     fi
 done
 

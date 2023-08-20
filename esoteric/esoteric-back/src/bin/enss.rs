@@ -118,7 +118,7 @@ async fn problems(State(handle): State<AppState>, Path(problem_set): Path<String
         .bind(problem_set)
         .fetch_all(handle.db())
         .await
-        .map_err(|e| ServerError("Could not select problems".to_string() + &e.to_string()))?
+        .map_err(|_| ServerError("Could not select problems".to_string()))?
         .into_iter()
         .map(|(name, rating)| ProblemIndex { name, rating })
         .collect();
@@ -145,7 +145,7 @@ async fn problem(State(handle): State<AppState>,
             .bind(problem.clone())
             .fetch_one(handle.db())
             .await
-            .map_err(|e| ServerError("Could not query problem limit".to_string() + &e.to_string()))?;
+            .map_err(|_| ServerError("Could not query problem limit".to_string()))?;
 
     let content =
         fs::read_to_string(PROBLEM_SETS.to_string() + "/" + &set + "/" + &problem + "/index.md")
@@ -381,7 +381,7 @@ async fn problemset_submission_results(State(handle): State<AppState>,
         .bind(user.id())
         .fetch_all(handle.db())
         .await
-        .map_err(|e| ServerError("Could not find results".to_string() + &e.to_string()))?;
+        .map_err(|_| ServerError("Could not find results".to_string()))?;
 
     let mut problem_sets = ProblemsetLastResults { results: HashMap::new() };
     for (key, submission, status, kb_used, ms_used) in results {

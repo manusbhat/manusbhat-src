@@ -13,7 +13,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './framework/globals.css';
 import Home from './routes/index/index';
 import { Login } from './routes/auth/login-signup';
-import Text from './routes/text/text';
+import Text, { Article } from './routes/text/text';
 import Sync from './routes/sync/sync';
 import { ProblemSet, ProblemSetList, Results, SingleProblem } from './routes/tutoring/tutoring';
 import Admin from './routes/admin/admin';
@@ -49,8 +49,12 @@ root.render(
 
                 <Route path="/admin" element={<Admin />} />
 
-                <Route path="/text" element={<Text />} />
                 <Route path="/sync" element={<Sync />} />
+
+                <Route path="/text">
+                    <Route index element={<Text />} />
+                    <Route path=":tag/:article" element={<Article/>}/>
+                </Route>
 
                 <Route path="/tutoring">
                     <Route index element={<ProblemSetList />} />

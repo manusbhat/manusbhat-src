@@ -9,6 +9,7 @@
  import Section from "./section";
  import "./globals.css"
  import "./skill_list.css"
+import { Link } from "react-router-dom";
 
  function SkillGroup(props: React.PropsWithChildren<{id: string, title: string}>) {
     return (
@@ -107,7 +108,7 @@ export function InlineSkill(props: { name: string, rating?: string, img_src?: st
         <span className="skill-inline-item">
             {image}
             {props.href
-                ?  <a className="skill-inline-text" href={props.href} target="_blank" rel="noopener noreferrer">{props.name}</a>
+                ?  <Link className="skill-inline-text" to={props.href}>{props.name}</Link>
                 :  <p className="skill-inline-text">{props.name}</p>
             }
             {rating}

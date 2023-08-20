@@ -347,7 +347,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], PORT));
 
-    tracing::debug!("axum::init");
+    println!("auth::init");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

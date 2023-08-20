@@ -101,7 +101,7 @@ pub async fn resync(db: &SqlitePool) {
         for problem in problems {
             let file_contents = fs::read_to_string(PROBLEM_SETS.to_string() + "/" + &problem_set + "/" + &problem + "/ok.cpp").unwrap();
             let mut cached = false;
-            if let Ok(cache_contents) = fs::read_to_string(PROBLEM_SETS.to_string() + "/" + &problem_set + "/" + &problem + "/ok.cpp.cache") {
+            if let Ok(cache_contents) = fs::read_to_string("./problem_sets/".to_string() + &problem_set + "/" + &problem + "/ok.cpp.cache") {
                 if file_contents == cache_contents {
                     cached = true
                 }

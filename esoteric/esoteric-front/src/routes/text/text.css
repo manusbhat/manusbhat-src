@@ -1,0 +1,39 @@
+.text-md {
+    width: 900px;
+    margin: auto;
+}
+
+.text-md h1 {
+    font-size: 30px;
+    margin-top: 80px;
+}
+
+.text-md h2 {
+    font-family: var(--bold);
+    font-size: 25px;
+}
+
+.text-md img {
+    padding: 10px;
+}
+
+.text-md p, .text-md li {
+    font-family: var(--comp-prog);
+}
+.text-md li {
+    font-size: 14px;
+    margin: 5px;
+}
+
+.text-md pre {
+    border-radius: 3px;
+    padding: 15px !important;
+}
+
+.text-md code {
+    font-size: 15px;
+}
+
+.text-md ul {
+    appearance: none;
+}
