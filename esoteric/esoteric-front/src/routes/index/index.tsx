@@ -10,7 +10,7 @@ import { StandardTemplate } from "../../framework/template";
 
 import "./index.css"
 import Section from "../../framework/section";
-import { useWorker } from "../../framework/proxy";
+import { request, useWorker } from "../../framework/proxy";
 
 function ActualStatus(props: {path: string, name: string}) {
     const [status, setStatus] = useState("ping");
@@ -20,14 +20,18 @@ function ActualStatus(props: {path: string, name: string}) {
         async () => {
             try {
                 const result = await fetch(process.env.REACT_APP_API_URL + props.path);
-                setStatus(result.status + " OK");
-                setClassName("index-status-ok");
+                if (result.ok) {
+                    setStatus(result.status + " OK");
+                    setClassName("index-status-ok");
+                }
+                else {
+                    setStatus(result.status + " ERR");
+                    setClassName("index-status-err");
+                }
             } catch (e) {
                 setStatus("501 ERR");
                 setClassName("index-status-err"); 
-                return;
             }
-
         }
     )
 
@@ -48,7 +52,7 @@ function Stats(props: {path: string, name: string}) {
     useWorker(
         async () => {
             try {
-                const result = await fetch(process.env.REACT_APP_API_URL + props.path);
+                const result = await request(props.path);
                 const json = await result.json();
                 setStats(json);
             } catch (e) {

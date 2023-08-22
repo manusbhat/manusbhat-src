@@ -6,8 +6,8 @@ use std::sync::Arc;
 
 use axum::{routing::{get}, Router, Json};
 use axum::extract::Path;
-use serde::{Deserialize, Serialize};
-use sqlx::{Executor, Sqlite, SqlitePool};
+use serde::{Serialize};
+use sqlx::{Sqlite, SqlitePool};
 use sqlx::migrate::MigrateDatabase;
 use tower_http::trace::TraceLayer;
 use tower_http::services::ServeDir;

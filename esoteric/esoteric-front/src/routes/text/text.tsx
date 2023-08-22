@@ -30,7 +30,7 @@ export function Article() {
 
     return (
         <StandardTemplate active='Text' useStreaks={true}>
-            <Markdown markdown={markdown} enableHighlights img_base={"/text/static/" + tag + "/"}>
+            <Markdown markdown={markdown} enableHighlights img_base={"/text/static/" + encodeURIComponent(tag!) + "/"}>
                 {(headers, mdown) => 
                     <>
                         <h1>{strip_md_ext(article!)}</h1>

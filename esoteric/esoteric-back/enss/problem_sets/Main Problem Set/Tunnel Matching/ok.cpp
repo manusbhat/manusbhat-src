@@ -7,37 +7,37 @@ int init(void) {
 #define MAX_N 50000ll
 #define MAX_M 50000
 
-l depth[MAX_N + 5];
-l up[MAX_N + 5][21];
-l lca_count[MAX_N + 5];
-l lca_prefix[MAX_N + 5];
+ll depth[MAX_N + 5];
+ll up[MAX_N + 5][21];
+ll lca_count[MAX_N + 5];
+ll lca_prefix[MAX_N + 5];
 adjl adj;
 
-void euler(l n, l p, l d) {
+void euler(ll n, ll p, ll d) {
     depth[n] = d;
     up[n][0] = p;
-    for (l nbr: adj[n]) {
+    for (ll nbr: adj[n]) {
         if (nbr != p) {
             euler(nbr, n, d + 1);
         }
     }
 }
 
-void bin_jump_precomp(l n, l p, l k) {
+void bin_jump_precomp(ll n, ll p, ll k) {
     if (up[n][k - 1] == -1) {
         up[n][k] = -1;
     } else {
         up[n][k] = up[up[n][k - 1]][k - 1];
     }
 
-    for (l nbr: adj[n]) {
+    for (ll nbr: adj[n]) {
         if (nbr != p) {
             bin_jump_precomp(nbr, n, k);
         }
     }
 }
 
-l jump(l n, l amount) {
+ll jump(ll n, ll amount) {
     for (int i = 0; i < 20; ++i) {
         if (amount & (1 << i)) {
             n = up[n][i];
@@ -47,12 +47,12 @@ l jump(l n, l amount) {
     return n;
 }
 
-l lca(l a, l b) {
+ll lca(ll a, ll b) {
     if (depth[a] > depth[b]) a = jump(a, depth[a] - depth[b]);
     if (depth[b] > depth[a]) b = jump(b, depth[b] - depth[a]);
 
     if (a == b) return a;
-    l d = depth[a];
+    ll d = depth[a];
     for (int j = 19; j >= 0; --j) {
         if (up[a][j] != up[b][j]) {
             a = up[a][j];
@@ -63,16 +63,16 @@ l lca(l a, l b) {
     return up[a][0];
 }
 
-void prefix_dfs(l n, l p, l running_sum) {
+void prefix_dfs(ll n, ll p, ll running_sum) {
     lca_prefix[n] = running_sum + lca_count[n];
-    for (l nbr: adj[n]) {
+    for (ll nbr: adj[n]) {
         if (nbr != p) {
             prefix_dfs(nbr, n, lca_prefix[n]);
         }
     }
 }
 
-l solve(const adjl& adj, const vl& s, const vl& e) {
+ll solve(const adjl& adj, const vl& s, const vl& e) {
     ::adj = adj;
     // euler tour
     euler(0, -1, 0);
@@ -84,7 +84,7 @@ l solve(const adjl& adj, const vl& s, const vl& e) {
 
     // lca for every single node
     for (int i = 0; i < s.size(); ++i) {
-        l anc = lca(s[i], e[i]);
+        ll anc = lca(s[i], e[i]);
         lca_count[anc]++;
     }
 
@@ -92,9 +92,9 @@ l solve(const adjl& adj, const vl& s, const vl& e) {
     prefix_dfs(0, -1, 0);
 
     // solve every node using prefix
-    l ans = 0;
+    ll ans = 0;
     for (int i = 0; i < s.size(); ++i) {
-        l anc = lca(s[i], e[i]);
+        ll anc = lca(s[i], e[i]);
         ans += lca_prefix[e[i]] + lca_prefix[s[i]] - 2 * lca_prefix[anc];
     }
 
@@ -113,9 +113,9 @@ bool ok(int n, opipe& out, ipipe& in) {
     memset(depth, 0, sizeof depth);
 
     // random tree
-    l lower = min(n * n * 1000ll, MAX_N - 1);
-    l upper = max(lower + 1, min((n + 1) * (n + 1) * 1000ll, MAX_N - 1));
-    l N = randl(lower, upper);
+    ll lower = min(n * n * 1000ll, MAX_N - 1);
+    ll upper = max(lower + 1, min((n + 1) * (n + 1) * 1000ll, MAX_N - 1));
+    ll N = randl(lower, upper);
     adjl adj;
     if (n < 2) {
         adj = randtree_list(N);
@@ -126,8 +126,8 @@ bool ok(int n, opipe& out, ipipe& in) {
     else if (n == 5) adj = randtree_perfect(N, 5);
     else adj = randtree(N);
 
-    l M = min(N * (N - 1) / 2, 1000ll);
-    vector<l> s, e;
+    ll M = min(N * (N - 1) / 2, 1000ll);
+    vl s, e;
 
     // random paths (relatively straightforward)
     if (n == 5) {
@@ -154,10 +154,10 @@ bool ok(int n, opipe& out, ipipe& in) {
 
     out << N << " " << M << '\n';
     print_adjl(adj, out);
-    for (l i = 0; i < M; ++i) out << s[i] + 1 << " " << e[i] + 1 << '\n';
+    for (ll i = 0; i < M; ++i) out << s[i] + 1 << " " << e[i] + 1 << '\n';
     out.flush();
 
-    l ans, comp = solve(adj, s, e);
+    ll ans, comp = solve(adj, s, e);
     in >> ans;
 
     return ans == comp;

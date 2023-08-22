@@ -20,6 +20,8 @@ use esoteric_back::state::AppState;
 const DATABASE_URL: &str = "sqlite:sync.db";
 const PORT: u16 = 3194;
 
+type UUID = String;
+
 #[derive(Debug, Serialize, Deserialize)]
 struct SlaveToken {
     token_id: i32,
@@ -27,6 +29,40 @@ struct SlaveToken {
 }
 
 mod nutq {
+    use super::{Serialize, Deserialize};
+
+    #[derive(Debug, Serialize, Deserialize)]
+    enum SchemeRepeat {
+        None,
+        Block(i32),
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct SchemeState {
+        id: super::UUID,
+
+        state: Vec<i32>,
+        text: String,
+
+        // start: Option<Date>,
+        // end: Option<Date>,
+
+        repeat: SchemeRepeat,
+
+        indentation: i32
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct SchemeItem {
+        id: super::UUID,
+
+        name: String,
+        syncs_to_gsync: bool,
+        color_index: i32,
+
+        schemes: Vec<SchemeItem>
+    }
+
     // nutq needs special functions
     async fn on_master_update() {
         // based on json
@@ -49,6 +85,9 @@ mod nutq {
 //
 // }
 //
+// async fn retrieve(old_hash: String) {
+//
+// }
 
 /* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
 #[tokio::main]

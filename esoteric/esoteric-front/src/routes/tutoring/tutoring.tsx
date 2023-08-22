@@ -371,26 +371,27 @@ export function SingleProblem() {
             {!error &&
                 <div className="tutoring-problem">
 
-                    <Markdown markdown={problemData?.content || ""}>
-                        {(header, mdown) => {
-                            return (
-                                <div className="tutoring-problem-main">
-                                    {problemData &&
-                                        <ProblemConfig
-                                            name={problem!}
-                                            set={problem_set!}
-                                            rating={problemData.rating}
-                                            kb_limit={problemData!.kb_limit}
-                                            ms_limit={problemData!.ms_limit}
-                                            closes={problemData!.submission_close}
-                                        />
-                                    }
-                                    <div className="tutoring-md">
-                                        {mdown}
-                                    </div>
+                    <Markdown 
+                        markdown={problemData?.content || ""} 
+                        img_base={"/enss/static/" + encodeURIComponent(problem_set!) + "/" + encodeURIComponent(problem!) + "/"}
+                        >
+                        {(header, mdown) => 
+                            <div className="tutoring-problem-main">
+                                {problemData &&
+                                    <ProblemConfig
+                                        name={problem!}
+                                        set={problem_set!}
+                                        rating={problemData.rating}
+                                        kb_limit={problemData!.kb_limit}
+                                        ms_limit={problemData!.ms_limit}
+                                        closes={problemData!.submission_close}
+                                    />
+                                }
+                                <div className="tutoring-md">
+                                    {mdown}
                                 </div>
-                            )
-                        }}
+                            </div>
+                        }
                     </Markdown>
 
                     <Submit

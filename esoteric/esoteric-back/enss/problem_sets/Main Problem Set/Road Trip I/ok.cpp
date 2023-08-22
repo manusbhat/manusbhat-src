@@ -4,11 +4,11 @@ int init(void) {
     return 10;
 }
 
-l solve(l G, l D, l N, const vl &x, const vl &c) {
+ll solve(ll G, ll D, ll N, const vl &x, const vl &c) {
    vl next(N + 1, -1);
 
-   l min = INF;
-   l ind = -1;
+   ll min = INF;
+   ll ind = -1;
    for (int i = 0; i < N; i++) {
        if (c[i] < min) {
            min = c[i];
@@ -18,15 +18,15 @@ l solve(l G, l D, l N, const vl &x, const vl &c) {
    }
    next[ind + 1] = N;
 
-   l j = -1;
-   l cost = 0;
+   ll j = -1;
+   ll cost = 0;
    while (j != N) {
-       l x_pos = j == -1 ? 0 : x[j];
-       l n = next[j + 1];
-       l nx_pos = n == N ? D : x[n];
-       l dist = nx_pos - x_pos;
+       ll x_pos = j == -1 ? 0 : x[j];
+       ll n = next[j + 1];
+       ll nx_pos = n == N ? D : x[n];
+       ll dist = nx_pos - x_pos;
        if (j == -1 && dist > G) return -1;
-       l delta = max(0ll, dist - G);
+       ll delta = max(0ll, dist - G);
        cost += delta * (j == -1 ? 0 : c[j]);
        G = G + delta - dist;
 
@@ -37,7 +37,7 @@ l solve(l G, l D, l N, const vl &x, const vl &c) {
 }
 
 bool ok(int n, opipe& out, ipipe& in) {
-    l G, D, N;
+    ll G, D, N;
 
     N = randl(1000, 2500);
     D = randl(N + 100, 1e9);
@@ -83,7 +83,7 @@ bool ok(int n, opipe& out, ipipe& in) {
     }
     out.flush();
 
-    l ans, correct;
+    ll ans, correct;
     in >> ans;
     correct = solve(G, D, N, x, c);
 

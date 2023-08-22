@@ -1,9 +1,9 @@
 [kb_limit: 256000]
 [ms_limit: 1000]
-[rating: 340]
+[rating: 330]
 [creation: 2023-08-14T16:00]
 
-At Wilson Field, there are $1 \le N \le 10^5$ burrowing entrances. As it happens to turn out, these entrances are connected by $N - 1$ bidirectional tunnels such that you can reach any burrow from any other burrow. 
+At Wilson Park, there are $1 \le N \le 10^5$ burrowing entrances. As it happens to turn out, these entrances are connected by $N - 1$ bidirectional tunnels such that you can reach any burrow from any other burrow. 
 
 Also present at the field are $1 \le M \le 10^5$ rabbits. Each rabbit is currently located at one of the burrowing entrances (multiple rabbits may be at the same entrance), and has a target burrow it must reach. Moreover, bunnies will take the direct path to their target. At the simulation start, all rabbits will begin moving at the same time and at the same pace.
 

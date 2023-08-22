@@ -4,23 +4,23 @@
 
 using namespace std;
 
-using l = long long;
+using ll = long long;
 using b = bool;
-using vl = vector<l>;
-using sl = set<l>;
+using vl = vector<ll>;
+using sl = set<ll>;
 using adjl = vector<vl>;
 
 #define bg(x) begin(x)
 #define all(x) bg(x), end(x)
 
-constexpr l INF = 0x7f7f7f7f7f7f7f7f;
+constexpr ll INF = 0x7f7f7f7f7f7f7f7f;
 
-l randl(l s, l e) {
+ll randl(ll s, ll e) {
     assert(s < e);
-    return s + (l) rand() % (e - s);
+    return s + (ll) rand() % (e - s);
 }
 
-vl randvl(int n, l s, l e) {
+vl randvl(int n, ll s, ll e) {
     vl v(n);
     for (int i = 0; i < n; i++) {
         v[i] = randl(s, e);
@@ -29,7 +29,7 @@ vl randvl(int n, l s, l e) {
     return v;
 }
 
-sl randsl(int n, l s, l e) {
+sl randsl(int n, ll s, ll e) {
     sl v;
     while (v.size() < n) {
         v.insert(randl(s, e));
@@ -45,12 +45,12 @@ vl sltovl(const sl& s) {
 
 void shuffle(vl& vl) {
    for (int i = 0; i < vl.size(); ++i) {
-       l next = randl(i, vl.size());
+       ll next = randl(i, vl.size());
        swap(vl[i], vl[next]);
    }
 }
 
-vl randpl(l n) {
+vl randpl(ll n) {
     vl v(n);
     iota(all(v), 1);
     shuffle(v);
@@ -58,13 +58,18 @@ vl randpl(l n) {
     return v;
 }
 
-adjl randgraph(l n, l m, b simple=true);
-adjl randdag(l n, l m, b simple=true);
+void adj_edge(adjl& adj, ll u, ll v) {
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+}
 
-adjl randtree(l n) {
+adjl randgraph(ll n, ll m, b simple=true);
+adjl randdag(ll n, ll m, b simple=true);
+
+adjl randtree(ll n) {
     adjl adj(n);
     for (int i = 1; i < n; ++i) {
-        l parent = randl(0, i);
+        ll parent = randl(0, i);
         adj[parent].push_back(i);
         adj[i].push_back(parent);
     }
@@ -72,12 +77,12 @@ adjl randtree(l n) {
     return adj;
 }
 
-adjl randtree_star(l n, l k) {
+adjl randtree_star(ll n, ll k) {
     adjl adj(n);
     vl prev(k);
-    for (l i = 1; i < n; ++i) {
-        l bucket = randl(0, k);
-        l p = prev[bucket];
+    for (ll i = 1; i < n; ++i) {
+        ll bucket = randl(0, k);
+        ll p = prev[bucket];
         adj[i].push_back(p);
         adj[p].push_back(i);
         prev[bucket] = i;
@@ -86,10 +91,10 @@ adjl randtree_star(l n, l k) {
     return adj;
 }
 
-adjl randtree_list(l n) {
+adjl randtree_list(ll n) {
     vl perm = randpl(n);
     adjl adj(n);
-    for (l i = 1; i < n; ++i) {
+    for (ll i = 1; i < n; ++i) {
         adj[perm[i - 1] - 1].push_back(perm[i] - 1);
         adj[perm[i] - 1].push_back(perm[i - 1] - 1);
     }
@@ -97,10 +102,10 @@ adjl randtree_list(l n) {
     return adj;
 }
 
-adjl randtree_perfect(l n, l k) {
+adjl randtree_perfect(ll n, ll k) {
     adjl adj(n);
-    for (l i = 1; i < n; ++i) {
-        l parent = (i - 1) / k;
+    for (ll i = 1; i < n; ++i) {
+        ll parent = (i - 1) / k;
         adj[parent].push_back(i);
         adj[i].push_back(parent);
     }
@@ -109,8 +114,8 @@ adjl randtree_perfect(l n, l k) {
 }
 
 void print_adjl(const adjl& adj, opipe& out) {
-    for (l i = 0; i < adj.size(); ++i) {
-        for (l j: adj[i]) {
+    for (ll i = 0; i < adj.size(); ++i) {
+        for (ll j: adj[i]) {
             if (i > j) continue;
 
             if (randl(0, 2)) {

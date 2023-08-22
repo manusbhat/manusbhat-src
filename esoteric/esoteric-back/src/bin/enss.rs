@@ -1,26 +1,38 @@
-use std::collections::HashMap;
-use std::fs;
-use std::io::Write;
+use std::{
+    collections::HashMap,
+    fs,
+    io::Write,
+    net::SocketAddr,
+    sync::Arc
+};
 
-use std::net::SocketAddr;
-use std::sync::Arc;
+use axum::{
+    routing::{get, post},
+    Router,
+    Json,
+    extract::{Path, State, Multipart, Query},
+    http::{header},
+    response::IntoResponse,
+    body::Bytes
+};
 
-use axum::{routing::{get, post}, Router, Json};
-use axum::extract::{Path, State, Multipart, Query};
-use axum::http::{header};
-use axum::response::IntoResponse;
-
-use sqlx::{sqlite::SqlitePool, Sqlite, query_as};
+use sqlx::{
+    sqlite::SqlitePool,
+    Sqlite,
+    query_as,
+    migrate::MigrateDatabase
+};
 use serde::{Deserialize, Serialize};
-use sqlx::migrate::MigrateDatabase;
 use ::chrono::{
     DateTime,
     Utc,
     serde::ts_seconds_option
 };
-use axum::body::Bytes;
 use tokio::sync;
-use tower_http::trace::TraceLayer;
+use tower_http::{
+    trace::{TraceLayer},
+    services::ServeDir
+};
 use esoteric_back::{
     auth::UserClaim,
     handlers::{stats, status},
@@ -30,9 +42,9 @@ use esoteric_back::{
 };
 use crate::{
     libenss::executor::execution_thread,
-    libenss::setup::resync
+    libenss::setup::resync,
+    libenss::setup::create_tables
 };
-use crate::libenss::setup::create_tables;
 
 mod libenss;
 
@@ -456,6 +468,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/enss/problem_set/:problem_set/problem/:problem/submission/:submission", get(submission))
         .route("/enss/problem_set/:problem_set/last_results", get(problemset_submission_results))
         .route("/enss/results", get(submission_results))
+        .nest_service("/enss/static/", ServeDir::new("problem_sets/"))
         /* health actions */
         .route("/enss/status", get(status))
         .route("/enss/stats", get(stats))
