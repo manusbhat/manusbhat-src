@@ -34,7 +34,7 @@ class ipipe;
 
 /* abstract methods */
 int init(void); // returns number of test cases
-bool ok(int n, opipe& out, ipipe& min);
+bool ok(int n, opipe& out, ipipe& in);
 
 
 /* io based off of {https://stackoverflow.com/a/33759060}, adapted to process fds */

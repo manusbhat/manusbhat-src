@@ -46,4 +46,4 @@ Challenge 1: What if instead of everyone starting at the same time, rabbit 1 fir
 
 Challenge 2: What if the scent evaporates instantly, and thus bunnies are only able to recognize bunnies in exact same burrow as them (or crossing the same tunnel) at the exact same timestamp? This is a much harder problem, but I think HLD along with some clever graph manipulations gets you the majority of the way there.
 
-Problem Credits: Manu
+Problem Credits: Manu. Tested by Jiaming.

@@ -197,7 +197,7 @@ function Submit(
 
             let res = await authentication_request(
                 props.user,
-                "/enss/problem_set/" + props.problem_set + "/problem/" + props.problem + "/submission/",
+                "/enss/problem_set/" + encodeURIComponent(props.problem_set!) + "/problem/" + encodeURIComponent(props.problem!) + "/submission/",
                 "POST",
                 formData,
                 null
@@ -351,7 +351,7 @@ export function SingleProblem() {
     useWorker(
         async () => {
             try {
-                const res = await request("/enss/problem_set/" + problem_set + "/problem/" + problem);
+                const res = await request("/enss/problem_set/" + encodeURIComponent(problem_set!) + "/problem/" + encodeURIComponent(problem!));
                 if (res.ok) {
                     const json = await res.json();
                     setProblemData(json);
@@ -418,7 +418,7 @@ export function ProblemSet() {
     useWorker(
         async () => {
             try {
-                const res = await request("/enss/problem_set/" + problem_set + "/problems");
+                const res = await request("/enss/problem_set/" + encodeURIComponent(problem_set!) + "/problems");
                 const json = await res.json();
                 setProblems(json.map((elem: any) => elem.name));
                 setRatings(json.map((elem: any) => elem.rating));
@@ -433,7 +433,7 @@ export function ProblemSet() {
         async () => {
             if (user[0]) {
                 try {
-                    const res = await authentication_request(user, "/enss/problem_set/" + problem_set + "/last_results", "GET");
+                    const res = await authentication_request(user, "/enss/problem_set/" + encodeURIComponent(problem_set!) + "/last_results", "GET");
                     const json = (await res.json()).results;
 
                     const result = Object.keys(json).reduce((result: any, name: string) => {
@@ -457,7 +457,7 @@ export function ProblemSet() {
 
             <List
                 labels={problems}
-                to={problems.map(elem => "problem/" + elem)}
+                to={problems.map(elem => "problem/" + encodeURIComponent(elem))}
                 results={testCases}
                 rating={ratings}
             />
@@ -487,7 +487,7 @@ export function ProblemSetList() {
                 <Separator />
             </div>
 
-            <List labels={problemSets} to={problemSets.map(elem => "problem_set/" + elem)} />
+            <List labels={problemSets} to={problemSets.map(elem => "problem_set/" + encodeURIComponent(elem))} />
         </StandardTemplate>
     )
 }
@@ -566,8 +566,6 @@ export function Results() {
 
     async function query(event: React.FormEvent) {
         event.preventDefault();
-
-        console.log("Called");
 
         try {
             const url =  "/enss/results?" +

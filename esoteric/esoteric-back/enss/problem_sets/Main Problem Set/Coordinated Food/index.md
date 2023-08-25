@@ -1,47 +1,37 @@
 [kb_limit: 256000]
 [ms_limit: 1000]
-[rating: 230]
+[rating: 220]
 [creation: 2023-08-14T16:00]
-[close:    2023-08-14T16:00]
 
-Mugs and Alice have been watching a lot of wrestling matches lately. They have been watching so much wrestling that they have decided to start their own wrestling league! The two have already recruited $1 \le N \le 10^5$ rabbits to join their league. Conveniently, $N = 2^K$ for some integer $K \ge 0$.
+TODO: untested
 
-To prepare for the logistics of the competition, the two would like to know the total amount of brackets that could potentially occur. Formally, a bracket specifies which rabbit wins each of the $N - 1$ matches. Two brackets are considered different if for any given match their predicted winner differs. Because apparently no one is able to understand how a tournament bracket is supposed to be set up (see Rabbit Wrestling League II fmi), for this problem we will initially have rabbit $1$ face $2$, $3$ face $4$, and so on. Then, the winner of $1$ vs $2$ faces the winner of $3$ vs $4$ and so on (essentially a perfect binary tree where the leaves are labelled with the natural numbers).
+Alice's $1 \le N \le 10^5$ friends are trying to eat strawberries! Alice's $i$th friend is located at $0 \le x_i \le 10^9$, and is trying to eat the strawberry located at $-10^9 \le s_i \le 10^9$ (multiple strawberries can be at the same location!). 
 
-However, there's a catch! For some $0 \le P \le \min\left(10^5, 2\binom{N}{2}\right)$ pairs of rabbits, Alice is confident that bunny $a_i$ will definitively win over bunny $b_i$ should the two ever face each other. Therefore, Mugs and Alice would like to discount all brackets that violate Alice's observations.
+However, the bunnies need to jump in unison. Together, the bunnies must choose a single $1 \le K \le 10^9$ such that each bunny can reach their strawberry by making jumps of length $K$ to the left or right. Moreover, the must jump in unison: all bunnies must jump at the same time, and all must make a uniform decision of whether to jump left or right for each individual jump. However, once a bunny reaches his or her strawberry, they exit the simulation and no longer need to jump.
 
-How many brackets are possible under Alice's constraints, mod $10^9 + 7$?
+If $K$ is chosen optimally, what is the minimum amount of jumps before all bunnies have reached their strawberries? 
 
 # Input
 
-The first line contains $N$ and $P$. The next $P$ lines contain two integers $1 \le a_i, b_i \le N$, denoting that rabbit $a_i$ is guaranteed to out-wrestle rabbit $b_i$. 
+The first line contains $N$. The next $N$ lines contain two integers $x_i, s_i$, denoting that the $i$th bunny is located at $x_i$ and the $i$th strawberry is located at $s[i]$.
 
 # Output
 
-Output one line, the total amount of possible brackets consistent with Alice's observations, mod $10^9 + 7$.
+Output one line, the minimum amount of jumps required to ensure that all bunnies have reached their strawberries. 
 
 # Example
 
 ```in
-4 0
+4
+1 4 7 10
+9 4 7 14
 ```
 ```out
-8
+2
 ```
 
-When $P = 0$, it can be shown that the answer is always $2^{N-1}$ (subject to mods).
+If we let $K = 4$, then the second and third bunny exit immediately. After a single jump right, the fourth bunny can reach his strawberry. After one more jump, the first bunny can reach his strawberry. Thus, the answer is $2$.
 
 ```in
-4 2
-1 2
-2 3
-```
-```out
-4
-```
-Since $1$ always beats $2$, the second condition never even applies. From here, the winner of $3$ and $4$ has two options. Then, the winner of $1$ vs the previous winner also has two options, giving us a total of $4$ possible brackets.
-
-# Variations
-Consider how to deal with first-round byes in the event that $N$ is not a power of 2. Also, take a look at Rabbit Wrestling League II to incorporate a proper tournament bracket set up.
 
 Problem Credits: Manu

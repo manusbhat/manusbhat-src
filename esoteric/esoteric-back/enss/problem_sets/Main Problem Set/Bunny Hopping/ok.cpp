@@ -28,11 +28,11 @@ ll dfs2(int m, int p, adjl& tree) {
     // four edges
     for (ll next: tree[m]) {
         if (next != p) {
-            return dfs2(next, m, tree) + 1;
+            return dfs2(next, m, tree);
         }
     }
 
-    return 1; // 2 cycle
+    return 0;
 }
 
 ll solve(adjl& tree, vector<pair<ll, ll>>& sisters) {

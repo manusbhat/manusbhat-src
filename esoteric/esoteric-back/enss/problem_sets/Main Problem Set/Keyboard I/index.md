@@ -3,6 +3,7 @@
 [rating: 130]
 [creation: 2023-08-21T16:00]
 
+TODO: untested
 
 Mugs is learning to type! Because his arms are stubby, this keyboard is one row and can be thought of as one dimensional. In rabbit-lang, there are $C$ consonants and $V$ vowels such that $1 \le  C + V \le 10^5$ and both $C$ and $V$ are non-negative. 
 

@@ -2,46 +2,40 @@
 [ms_limit: 1000]
 [rating: 330]
 [creation: 2023-08-14T16:00]
-[close:    2023-08-14T16:00]
 
-Mugs and Alice have been watching a lot of wrestling matches lately. They have been watching so much wrestling that they have decided to start their own wrestling league! The two have already recruited $1 \le N \le 10^5$ rabbits to join their league. Conveniently, $N = 2^K$ for some integer $K \ge 0$.
+TODO: untested
 
-To prepare for the logistics of the competition, the two would like to know the total amount of brackets that could potentially occur. Formally, a bracket specifies which rabbit wins each of the $N - 1$ matches. Two brackets are considered different if for any given match their predicted winner differs. Because apparently no one is able to understand how a tournament bracket is supposed to be set up (see Rabbit Wrestling League II fmi), for this problem we will initially have rabbit $1$ face $2$, $3$ face $4$, and so on. Then, the winner of $1$ vs $2$ faces the winner of $3$ vs $4$ and so on (essentially a perfect binary tree where the leaves are labelled with the natural numbers).
+The bunnies are back at Wilson Park! $1 \le N \le 10^5$ bunnies are placed along $N$ burrows, such that each burrow contains exactly $1$ rabbit and $N$ is even. These burrows are connected by $N - 1$ bidirectional tunnels such that you can reach any burrow from any other burrow.
 
-However, there's a catch! For some $0 \le P \le \min\left(10^5, 2\binom{N}{2}\right)$ pairs of rabbits, Alice is confident that bunny $a_i$ will definitively win over bunny $b_i$ should the two ever face each other. Therefore, Mugs and Alice would like to discount all brackets that violate Alice's observations.
+Every rabbit has a unique sister rabbit. This property is commutative. That is if rabbit $a$ is the sister of rabbit $b$, then rabbit $b$ is the sister of rabbit $a$. Moreover, no rabbit is the sister of itself. 
 
-How many brackets are possible under Alice's constraints, mod $10^9 + 7$?
+Mugs is slightly disappointed that the sister rabbits are currently separated. He needs your help! In a single operation, you can swap the position of any two rabbits (sisters or not). What is the minimum number of operations required to ensure that every rabbit is next to its sister? We say that a rabbit is next to its sister if by the end of the simulation, the two rabbits are in adjacent burrows.
 
 # Input
 
-The first line contains $N$ and $P$. The next $P$ lines contain two integers $1 \le a_i, b_i \le N$, denoting that rabbit $a_i$ is guaranteed to out-wrestle rabbit $b_i$. 
+The first line contains a single integer, $N$. The next $N - 1$ lines contain two integers $1 \le a_i, b_i \le N$, denoting that burrows $a_i$ and $b_i$ are connected by a tunnel. The final $\frac{N}{2}$ lines contain two integers $1 \le c_i, d_i \le N$, denoting that rabbit $c_i$ is the sister of rabbit $d_i$. It is guaranteed that each rabbit has exactly one sister rabbit. Note that initially, rabbit $i$ is located in burrow $i$.
 
 # Output
 
-Output one line, the total amount of possible brackets consistent with Alice's observations, mod $10^9 + 7$.
+Output one line, the minimum number of operations required to ensure that every rabbit is next to its sister. If this is impossible, output $-1$.
 
 # Example
 
 ```in
-4 0
-```
-```out
-8
-```
-
-When $P = 0$, it can be shown that the answer is always $2^{N-1}$ (subject to mods).
-
-```in
-4 2
+4 
 1 2
+2 3
+3 4
+1 4
 2 3
 ```
 ```out
-4
+1
 ```
-Since $1$ always beats $2$, the second condition never even applies. From here, the winner of $3$ and $4$ has two options. Then, the winner of $1$ vs the previous winner also has two options, giving us a total of $4$ possible brackets.
+
+In this example, where the tree is a linked list, we can swap bunnies $1$ and $3$, resulting in the configuration of $3, 2, 1, 4$. Since $2$ and $3$ are sisters, and $1$ and $4$ are sisters, this is a valid configuration. Thus, the answer is $1$.
 
 # Variations
-Consider how to deal with first-round byes in the event that $N$ is not a power of 2. Also, take a look at Rabbit Wrestling League II to incorporate a proper tournament bracket set up.
+For a slightly harder challenge, in addition to outputting the minimum amount of swaps, output the number of sequences of swaps that achieve this minimum. You can do this in $O(N^2)$ time, which I believe is optimal. I also considered a problem where you can only swap rabbits in adjacent fields. My friends and I came up with possible solutions, though we were never able to prove them.
 
 Problem Credits: Manu

@@ -10,8 +10,8 @@ using vl = vector<ll>;
 using sl = set<ll>;
 using adjl = vector<vl>;
 
-#define bg(x) begin(x)
-#define all(x) bg(x), end(x)
+#define bg(x) std::begin(x)
+#define all(x) bg(x), std::end(x)
 
 constexpr ll INF = 0x7f7f7f7f7f7f7f7f;
 

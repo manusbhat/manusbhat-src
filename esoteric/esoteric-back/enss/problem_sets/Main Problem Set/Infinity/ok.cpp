@@ -79,7 +79,7 @@ bool ok(int n, opipe& out, ipipe& in) {
         }
         if (n == 3) {
             // add extra component
-            adj_edge(adj, 0, 40001);
+            adj_edge(adj, 0, 40000);
             M++;
         }
     }

@@ -3,6 +3,8 @@
 [rating: 230]
 [creation: 2023-08-21T16:00]
 
+TODO: untested
+
 Mugs and Alice are planning a road trip! They will be riding in the rabbit-mobile, whose gas tank can comfortably fit $1 \le K \le 10^9$. Moreover, the rabbit-mobile has an efficiency of 1 mile per gallon. Their gas tank at the start has $0 \le G \le K$ gallons of gas.
 
 

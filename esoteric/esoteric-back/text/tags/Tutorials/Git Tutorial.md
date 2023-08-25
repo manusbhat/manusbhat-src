@@ -7,7 +7,7 @@ What is Git? Git is a command line utility used for two (but related) purposes: 
 
 # Part 0: Accounts
 
-Even though Git is a stand-alone utility that works as version control system, to publish projects and/or have multiple people work on them, we need a web server to help us out. We'll be using GitHub, but tons other exists.
+Even though Git is a stand-alone utility that works as version control system, to publish projects and/or have multiple people work on them, we need a web server to help us out. We'll be using GitHub, but tons other exist.
 
 First, create an account on GitHub. I recommend using your personal email address as your primary (but you can add your student email as a secondary address to get a whole load of benefits). Then, navigate to `User Icon > Settings > Emails` and enable the 'Block command line pushes that expose my email' option. This will prevent your email from being exposed in commits. Keep a note of the private email GitHub created for you (e.g. `43832426+enigmurl@users.noreply.github.com`). Finally, scroll to `Developer Settings` and create a new personal access token. For now, just enable all options, but keep in mind you'll want to use a more limited set in the future. Keep a note of the token it gives you, as we'll need it later. 
 

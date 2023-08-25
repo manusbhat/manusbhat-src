@@ -42,4 +42,4 @@ See Road Trip II for a harder version, where you have to develop a linear soluti
 What happens if the mpg is not 1? What happens if we're not on a number line but instead a graph?
 
 
-Problem Credits: Manu
+Problem Credits: Manu. Tested by Jiaming.

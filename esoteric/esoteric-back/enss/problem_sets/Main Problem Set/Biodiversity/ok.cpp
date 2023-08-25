@@ -8,7 +8,8 @@ bool ok(int num, opipe& out, ipipe& in) {
     ll n = randl(250, 750);
     ll m = randl(250, 750);
     ll K;
-    vector<vl> mat(n, randvl(m, 1, 1 + n * m));
+    vector<vl> mat(n);
+    for (int i = 0; i < n; ++i) mat[i] = randvl(m, 1, 1 + n * m);
 
     // inlined to reuse the sum
     vl deltas(mat.size() * mat[0].size() + 1);

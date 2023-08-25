@@ -3,7 +3,9 @@
 [rating: 160]
 [creation: 2023-08-21T16:00]
 
-At Wilson Park, Mugs and his friends are lined up in a $N$ by $M$ grid, where $1 \le N, M \le 1000$. At each cell in the grid, there is a rabbit of species $1 \le i \le MN$. The sub-biodiversity of 2 adjacent rabbits with species $i$, $j$ to be $|i-j|$, and the biodiversity of the grid is said to be the sum of the sub-biodiversity of all pairs of adjacent cells (cardinal directions). Mugs' has been feeling awfully eugenic lately, and his goal is to modify the grid so the biodiversity is at most $K$ for some integer constant $0 \le K \le 10^18$.
+TODO: untested
+
+At Wilson Park, Mugs and his friends are lined up in a $N$ by $M$ grid, where $1 \le N, M \le 1000$. At each cell in the grid, there is a rabbit of species $1 \le i \le MN$. The sub-biodiversity of 2 adjacent rabbits with species $i$, $j$ to be $|i-j|$, and the biodiversity of the grid is said to be the sum of the sub-biodiversity of all pairs of adjacent cells (cardinal directions). Mugs' has been feeling awfully eugenic lately, and his goal is to modify the grid so the biodiversity is at most $K$ for some integer constant $0 \le K \le 10^{18}$.
 
 You may modify the grid as follows: you can choose a number $i \le MN$, and remove all rabbits of species $j$ where $j \ge i$. When removing a particular rabbit, all sub-biodiversity associated with that rabbit are removed from the total biodiversity, unless they were removed previously (by the other pair). Find the maximal $i$ you must choose to achieve the goal.
 
