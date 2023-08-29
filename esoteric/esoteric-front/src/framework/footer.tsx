@@ -17,7 +17,7 @@ function Footer() {
             <PlainSeparator/>
 
             <p>
-                Last updated <span id="git-last-commit-date">August 26, 2023</span>. Copyright © Manu Bhat 2022-{new Date().getFullYear()}. All rights reserved.
+                Last updated <span id="git-last-commit-date">August 28, 2023</span>. Copyright © Manu Bhat 2022-{new Date().getFullYear()}. All rights reserved.
                 <br/>
                 Not rated for mobile.
             </p>
