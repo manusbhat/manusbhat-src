@@ -9,18 +9,8 @@ use argon2::{
     PasswordVerifier,
     password_hash::SaltString
 };
-use axum::{
-    extract::{FromRequestParts, State},
-    headers::Authorization,
-    headers::authorization::Bearer,
-    http::request::Parts,
-    Json,
-    RequestPartsExt,
-    Router,
-    TypedHeader,
-    routing::{post, get, put, delete},
-    async_trait
-};
+use axum::{extract::{FromRequestParts, State}, headers::Authorization, headers::authorization::Bearer, http::request::Parts, Json, RequestPartsExt, Router, TypedHeader, routing::{post, get, put, delete}, async_trait, debug_handler};
+use axum::extract::Path;
 use serde::{Deserialize, Serialize};
 use jsonwebtoken::{decode, encode, Header, Validation};
 use rand_core::{OsRng, RngCore};
@@ -39,6 +29,7 @@ use esoteric_back::{
     state::{AppState, Error},
     state::Error::InvalidArgument
 };
+use esoteric_back::state::UserID;
 
 const DATABASE_URL: &str = "sqlite:auth.db";
 const PORT: u16 = 3192;
@@ -209,6 +200,25 @@ async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(use
     Ok(())
 }
 
+async fn user_from_name(State(handle): State<AppState>, _: RootAdminClaim, Path(username): Path<String>) -> Result<Json<UserID>, Error> {
+    let (user_id, ): (UserID, ) = sqlx::query_as("SELECT id FROM users WHERE username = ?")
+        .bind(username)
+        .fetch_one(handle.db())
+        .await
+        .map_err(|_| Error::ServerError("Could not fetch user, does user exist?".to_string()))?;
+
+    Ok(Json(user_id))
+}
+
+async fn user_from_id(State(handle): State<AppState>, _: RootAdminClaim, Path(user_id): Path<UserID>) -> Result<Json<String>, Error> {
+    let (username, ): (String, ) = sqlx::query_as("SELECT username FROM users WHERE id = ?")
+        .bind(user_id)
+        .fetch_one(handle.db())
+        .await
+        .map_err(|_| Error::ServerError("Could not fetch user, does user exist?".to_string()))?;
+
+    Ok(Json(username))
+}
 #[derive(Debug, Deserialize)]
 struct UserRenameIn {
     username: String,
@@ -335,6 +345,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/auth/authorize", post(authorize))
         .route("/auth/reauthorize", post(reauthorize))
         .route("/auth/user", post(user_create))
+        .route("/auth/user/name/:name", get(user_from_name))
+        .route("/auth/user/id/:id", get(user_from_id))
         .route("/auth/user", delete(user_delete))
         .route("/auth/user/username", put(user_rename))
         .route("/auth/user/password", put(user_set_password))

@@ -257,7 +257,7 @@ function Submit(
                             setType(event.target.value);
                         }}>
                             <option value="GNU G++20">GNU G++20</option>
-                            <option value="Java 17">Java 17</option>
+                            {/* <option value="Java 17">Java 17</option> */}
                             <option value="Python 3.11">Python 3.11</option>
                         </select>
                         <label htmlFor="tutoring-submission-file">File:</label>
@@ -558,7 +558,7 @@ function ProblemSetResults(props: { problem_set: string, results: ResultsQuery }
 export function Results() {
     const [problemSet, setProblemSet] = useState("");
     const [problem, setProblem] = useState("");
-    const [user, setUser] = useState<number | null>();
+    const [user, setUser] = useState("");
 
     const realUser = useUser();
 
@@ -568,10 +568,13 @@ export function Results() {
         event.preventDefault();
 
         try {
+            const user_response = user ? await authentication_request(realUser, "/auth/user/name/" + encodeURIComponent(user!), "GET") : null;
+            const user_id = user_response && user_response.ok && await user_response.json();
+
             const url =  "/enss/results?" +
                 (problemSet ? "&problem_set=" + encodeURIComponent(problemSet) : "") + 
                 (problem ? "&problem=" + encodeURIComponent(problem)  : "") +
-                (user ? "&user=" + encodeURIComponent(user.toString()) : "");
+                (user_id ? "&user=" + encodeURIComponent(user_id.toString()) : "");
 
             const res = await authentication_request(realUser, url, "GET");
             setMap((await res.json()).problem_sets);
@@ -598,8 +601,7 @@ export function Results() {
 
                 <label htmlFor="tutoring-results-user">User:</label>
                 <input type="text" id="tutoring-results-user" value={user || ""} onChange={(event) => {
-                    if (event.target.value === "") setUser(null);
-                    else setUser(parseInt(event.target.value));
+                    setUser(event.target.value);
                 }} />
 
                 <input type="submit" value="Go" className="ui-light-capsule ui-button-primary tutoring-submit" />

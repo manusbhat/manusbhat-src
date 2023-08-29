@@ -19,7 +19,7 @@ What is the minimum amount of money Mugs and Alice must spend to reach their des
 # Input 
 
 The first line contains the integers $K, G, D,$ and $N$.
-The next $N$ lines contain two integers: $x_i$ and $c_i$. It is guaranteed that $1 < x_1 < x_2 < \ldots < x_N < D$.
+The next $N$ lines contain two integers: $x_i$ and $c_i$. It is guaranteed that $1 \le x_1 < x_2 < \ldots < x_N < D$.
 
 # Output
 

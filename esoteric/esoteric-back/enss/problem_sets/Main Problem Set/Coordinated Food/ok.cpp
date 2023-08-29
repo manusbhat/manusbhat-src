@@ -50,9 +50,10 @@ bool ok(int n, opipe& out, ipipe& in) {
     for (int i = 0; i < N; ++i) s[i] = x[i] + steps[i] * G;
 
     out << N << '\n';
-    for (int i = 0; i < N; ++i) {
-        out << x[i] << ' ' << s[i] << '\n';
-    }
+    for (int i = 0; i < N; ++i) out << x[i] << ' ';
+    out << '\n';
+    for (int i = 0; i < N; ++i) out << s[i] << ' ';
+    out << '\n';
     out.flush();
 
     ll ans = solve(x, s);

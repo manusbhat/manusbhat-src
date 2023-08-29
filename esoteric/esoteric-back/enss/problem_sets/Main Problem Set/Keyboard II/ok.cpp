@@ -7,8 +7,11 @@ int init(void) {
 // dp[used blocks][vowels used blocks]
 ll dp[(ll) 2e4][100];
 ll solve(ll K, ll C, ll V, vector<vl>& x, vector<vl>& y) {
-    memset(dp, 0, sizeof dp);
+    for (int i = 0; i < 2e4; ++i) fill(dp[i], dp[i] + 100,  -0x7f7f7f7f7f7fll);
+    dp[0][0] = 0;
 
+    // factor of k^2 can be removed by switching loop order and using psums
+    // k <= 4 so it doesn't really matter
     for (int used = 0; used < C + V; ++used) {
         for (int vused = 0; vused <= V; ++vused) {
             // vertical c

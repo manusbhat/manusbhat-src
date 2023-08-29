@@ -3,10 +3,8 @@
 [rating: 320]
 [creation: 2023-08-21T16:00]
 
-TODO: untested
-
-
 Mugs is learning to type! Because his arms are stubby, this keyboard is at most $1 \le K \le 4$ rows tall and can be thought of as a narrow two-dimensional grid. In rabbit-lang, there are $KC$ consonants and $KV$ vowels such that $1 \le C \le 10^4$ and $1 \le V \le 50$. Moreover, consonants and vowels must be placed in $K \times 1$ horizontal or vertical blocks. For instance if $K = 3$, then the following is valid configuration:
+
 ```text
 C C C V
 V V V V
@@ -14,13 +12,14 @@ C C C V
 ```
 
 But this is not (some of the vowels and consonants are not in a single block):
+
 ```text
 C C C V
 C V V V
 C C V C
 ```
 
-Mugs is exploring alternatives to the standard QWERTY keyboard layout. He has decided to create a custom keyboard layout that is optimal for him. To score certain layouts, he has developed a metric. For each $i \in \{1, \ldots, C + V\}$ and $j \in {1, \ldots, K}$, a keyboard receives $-10^4 \le x_{j, i} \le 10^4$ points if a consonant is present and $-10^4 \le y_{j, i} \le 10^4$ points if a vowel is a present. The keyboard's total score is the sum of the individual contributions, across all $i$ and $j$. Of course, a keyboard must ensure that there exactly $KC$ consonants and $KV$ vowels, and that they must be placed into the appropriate blocks.
+Mugs is exploring alternatives to the standard QWERTY keyboard layout. He has decided to create a custom keyboard layout that is optimal for him. To score certain layouts, he has developed a metric. For each $i \in \{1, \ldots, C + V\}$ and $j \in \{1, \ldots, K\}$, a keyboard receives $-10^4 \le x_{j, i} \le 10^4$ points if a consonant is present and $-10^4 \le y_{j, i} \le 10^4$ points if a vowel is a present. The keyboard's total score is the sum of the individual contributions, across all $i$ and $j$. Of course, a keyboard must ensure that there exactly $KC$ consonants and $KV$ vowels, and that they must be placed into the appropriate blocks.
 
 Given the number of consonants and vowels, and the points for each letter, what is the maximum score a keyboard can achieve?
 
@@ -56,4 +55,4 @@ C C C
 ```
 The key board will receive a score of $1 + 4 + 8 + 8 + 5 + 6 = 32$. It can be shown this is the maximal possible score.
 
-Problem Credits: Manu
+Problem Credits: Manu. Tested by Jiaming.

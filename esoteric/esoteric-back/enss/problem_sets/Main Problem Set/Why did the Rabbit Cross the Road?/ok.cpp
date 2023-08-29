@@ -12,7 +12,9 @@ ll solve(vl& p) {
     vector<vl> sort2(N);
     for (int i = 0; i < p.size(); ++i) {
         ll sum = (i + p[i]) % N;
-        if (i + p[i] >= N) {
+        ll true_mid = abs(p[i] - i) > N / 2 ? sum : p[i] + i;
+        // ensure shorter side is between 0 to N
+        if (true_mid >= N) {
             mean2[sum].emplace_back((ll) (i + N / 2) % N, (p[i] + N / 2) % N);
             sort2[sum].push_back(min((ll) (i + N / 2) % N, (p[i] + N / 2) % N));
         }
@@ -44,8 +46,9 @@ ll solve(vl& p) {
     return ans;
 }
 
+
 bool ok(int n, opipe& out, ipipe& in) {
-    ll N = randl((ll) 5e4, (ll) 7e4);
+    ll N = randl((ll) 4e4, (ll) 5e4);
     if (N & 1) N--;
     else if (n == 7) N++;
 

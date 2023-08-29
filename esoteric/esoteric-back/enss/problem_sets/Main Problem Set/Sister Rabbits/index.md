@@ -1,9 +1,7 @@
 [kb_limit: 256000]
 [ms_limit: 1000]
-[rating: 330]
+[rating: 260]
 [creation: 2023-08-14T16:00]
-
-TODO: untested
 
 The bunnies are back at Wilson Park! $1 \le N \le 10^5$ bunnies are placed along $N$ burrows, such that each burrow contains exactly $1$ rabbit and $N$ is even. These burrows are connected by $N - 1$ bidirectional tunnels such that you can reach any burrow from any other burrow.
 
@@ -38,4 +36,4 @@ In this example, where the tree is a linked list, we can swap bunnies $1$ and $3
 # Variations
 For a slightly harder challenge, in addition to outputting the minimum amount of swaps, output the number of sequences of swaps that achieve this minimum. You can do this in $O(N^2)$ time, which I believe is optimal. I also considered a problem where you can only swap rabbits in adjacent fields. My friends and I came up with possible solutions, though we were never able to prove them.
 
-Problem Credits: Manu
+Problem Credits: Manu. Tested by Jiaming.

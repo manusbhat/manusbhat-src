@@ -230,7 +230,11 @@ static tuple<int, int, int> _popen2(
             EXECL("/usr/bin/java", "-Xss64m", "main", NULL);
         }
         else if (!strcmp(language, PYTHON3)) {
+#ifdef __linux
             EXECL("/usr/bin/python3", "main.py", NULL);
+#else
+            EXECL("/usr/local/bin/python3", "main.py", NULL);
+#endif
         }
 
         exit(-1); // error

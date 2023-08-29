@@ -84,10 +84,10 @@ mod nutq {
 // async fn rescind_slave() {
 //
 // }
-//
-// async fn retrieve(old_hash: String) {
-//
-// }
+
+async fn retrieve(old_version: i32) {
+    // if old_version is latest, just tell them that
+}
 
 /* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
 #[tokio::main]

@@ -3,8 +3,6 @@
 [rating: 130]
 [creation: 2023-08-21T16:00]
 
-TODO: untested
-
 Mugs is learning to type! Because his arms are stubby, this keyboard is one row and can be thought of as one dimensional. In rabbit-lang, there are $C$ consonants and $V$ vowels such that $1 \le  C + V \le 10^5$ and both $C$ and $V$ are non-negative. 
 
 Mugs is exploring alternatives to the standard QWERTY keyboard layout. He has decided to create a custom keyboard layout that is optimal for him. To score certain layouts, he has developed a metric. For each $i \in \{1, \ldots, C + V\}$, a keyboard receives $-10^4 \le x_i \le 10^4$ points if a consonant is present and $-10^4 \le y_i \le 10^4$ points if a vowel is a present. The keyboard's total score is the sum of the individual contributions, across all $i$. Of course, a keyboard must ensure that there exactly $C$ consonants and $V$ vowels.
@@ -37,4 +35,4 @@ In this example, if a keyboard is layed out as `C C V V C`, its score will be $x
 
 See Keyboard II for a more challenging version of this problem!
 
-Problem Credits: Manu
+Problem Credits: Manu. Tested by Jiaming.

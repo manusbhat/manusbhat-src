@@ -1,4 +1,4 @@
-# (www | esoteric).manubhat.com
+# (portfolio | esoteric).manubhat.com
 
 This website serves two primary roles:
 * To help me learn web development (this is my first real project!)

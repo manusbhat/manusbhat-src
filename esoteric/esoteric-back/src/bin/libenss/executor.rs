@@ -110,7 +110,7 @@ pub async fn execution_thread(_db: SqlitePool, mut rx: sync::mpsc::Receiver<Subm
                         .bind(ids[index])
                         .execute(&_db)
                         .await {
-                        std::panic::panic_any(e)
+                        panic!("Could not update test case result: {}", e);
                     };
                 }
             },

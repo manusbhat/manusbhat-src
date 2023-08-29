@@ -2,9 +2,6 @@
 [ms_limit: 1000]
 [rating: 340]
 [creation: 2023-08-14T16:00]
-[close:    2023-08-14T16:00]
-
-TODO: untested
 
 Mugs and Alice have been watching a lot of wrestling matches lately. They have been watching so much wrestling that they have decided to start their own wrestling league! The two have already recruited $1 \le N \le 10^5$ rabbits to join their league. Conveniently, $N = 2^K$ for some integer $K \ge 0$.
 
@@ -16,7 +13,7 @@ How many brackets are possible under Alice's constraints, mod $10^9 + 7$?
 
 # Input
 
-The first line contains $N$ and $P$. The next $P$ lines contain two integers $1 \le a_i, b_i \le N$, denoting that rabbit $a_i$ is guaranteed to out-wrestle rabbit $b_i$. 
+The first line contains $N$ and $P$. The next $P$ lines contain two integers $1 \le a_i, b_i \le N, a_i \ne b_i,$, denoting that rabbit $a_i$ is guaranteed to out-wrestle rabbit $b_i$. Note that her observations may not be consistent with transitivity.
 
 # Output
 
@@ -44,6 +41,6 @@ When $P = 0$, it can be shown that the answer is always $2^{N-1}$ (subject to mo
 Since $1$ always beats $2$, the second condition never even applies. From here, the winner of $3$ and $4$ has two options. Then, the winner of $1$ vs the previous winner also has two options, giving us a total of $4$ possible brackets.
 
 # Variations
-Consider how to deal with first-round byes in the event that $N$ is not a power of 2. Also, take a look at Rabbit Wrestling League II to incorporate a proper tournament bracket set up.
+Consider how to deal with first-round byes in the event that $N$ is not a power of 2. Also, take a look at Rabbit Wrestling League I to incorporate a proper tournament bracket set up.
 
 Problem Credits: Manu

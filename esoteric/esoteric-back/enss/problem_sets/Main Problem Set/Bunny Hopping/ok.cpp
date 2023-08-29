@@ -4,141 +4,138 @@ int init(void) {
     return 12;
 }
 
-ll parent[100000];
-ll child[100000];
-ll meta[100000];
-ll sister[100000];
-ll visited[100000];
-
-void dfs(int n, int p, adjl& tree) {
-    if (p == -1) child[n] = tree[n].size();
-    else child[n] = tree[n].size() - 1;
-    parent[n] = p;
-
-    for (ll chd: tree[n]) {
-        if (chd != p) {
-            dfs(chd, n, tree);
-        }
+// 1 indexed
+void bit_update(vl& data, ll index, ll delta) {
+    for (; index < data.size(); index += index & -index) {
+        data[index] += delta;
     }
 }
 
-ll dfs2(int m, int p, adjl& tree) {
-    if (visited[m]) return 0;
-    visited[m] = 1;
-    // four edges
-    for (ll next: tree[m]) {
-        if (next != p) {
-            return dfs2(next, m, tree);
-        }
+ll bit_query(const vl& data, ll index) {
+    ll sum = 0;
+    for (; index > 0; index -= index & -index) {
+        sum += data[index];
     }
 
-    return 0;
+    return sum;
 }
 
-ll solve(adjl& tree, vector<pair<ll, ll>>& sisters) {
-    memset(child, 0, sizeof child);
-    memset(parent, 0, sizeof parent);
-    memset(meta, -1, sizeof meta);
-    memset(sister, 0, sizeof sister);
-    memset(visited, 0, sizeof visited);
+//bit[jump_size][starting_mod][jumps_taken]; O(N\sqrt{N})
+vector<vector<vl>> bit;
+vl solve(const vl& s, const vector<pair<int, pair<ll, ll>>>& queries) {
+    vl updated_s = s;
+    ll N = s.size();
+    ll Q = queries.size();
+    ll SQRT = (ll) ceil(sqrt(N));
 
-    int N = tree.size();
-
-    for (int i = 0; i < N / 2; ++i) {
-        sister[sisters[i].first] = sisters[i].second;
-        sister[sisters[i].second] = sisters[i].first;
-    }
-
-    // partition tree using topo
-    dfs(0, -1, tree);
-
-    queue<int> leaves;
-    vector<pair<int, int>> metas;
-    for (int i = 0; i < N; ++i) {
-        if (child[i] == 0) {
-            leaves.push(i);
-        }
-    }
-
-    while (leaves.size() > 0) {
-        int curr = leaves.front();
-        leaves.pop();
-
-        ll p = parent[curr];
-        if (p == -1 || meta[p] >= 0) {
-            return -1;
-        }
-        else {
-            meta[curr] = metas.size();
-            meta[p] = metas.size();
-            metas.emplace_back(curr, p);
-
-            if (parent[p] != -1) {
-                if (!--child[parent[p]]) {
-                    leaves.push(parent[p]);
-                }
+    bit = vector<vector<vl>>(SQRT + 1);
+    for (int i = 1; i <= SQRT; ++i) {
+        bit[i] = vector<vl>(i);
+        for (int j = 0; j < i; ++j) {
+            bit[i][j] = vl((N + i - 1) / i + 1);
+            ll sum = 0;
+            for (int k = j, q = 1; k < N; k += i, q++) {
+                bit_update(bit[i][j], q, updated_s[k]);
             }
         }
     }
 
-    // draw an edge between meta nodes
-    adjl sub_adj(N / 2);
+    vl out;
+    for (const auto& q: queries) {
+        if (q.first == 1) {
+            ll start = q.second.first;
+            ll k = q.second.second;
 
-    for (int i = 0; i < N / 2; ++i) {
-        int pair_a = meta[sister[metas[i].first]];
-        int pair_b = meta[sister[metas[i].second]];
-        sub_adj[i].push_back(pair_a);
-        sub_adj[pair_a].push_back(i);
-        sub_adj[i].push_back(pair_b);
-        sub_adj[pair_b].push_back(i);
-    }
+            ll sum = 0;
+            if (abs(k) > SQRT) {
+                for (ll j = start; j < N && j >= 0; j += k) sum += updated_s[j];
+            }
+            else {
+                ll bucket = start % abs(k);
+                if (k > 0) {
+                    sum = bit_query(bit[k][bucket], bit[k][bucket].size() - 1) -
+                          bit_query(bit[k][bucket], (start - bucket) / k + 1) +
+                          updated_s[start];
+                }
+                else {
+                    sum = bit_query(bit[-k][bucket], (start - bucket) / -k + 1);
+                }
+            }
+            out.push_back(sum);
+        }
+        else {
+            ll patch = q.second.first;
+            ll juice = q.second.second;
+            ll delta = juice - updated_s[patch];
 
-    // solve permutation graph
-    ll ans = 0;
-    for (int i = 0; i < N / 2; ++i) {
-        if (!visited[i]) {
-            ans += dfs2(i, -1, sub_adj) - 1;
+            for (int i = 1; i <= SQRT; ++i) {
+                ll mod = patch % i;
+                bit_update(bit[i][mod], (patch - mod) / i + 1, delta);
+            }
+
+            updated_s[patch] = juice;
         }
     }
 
-    return ans;
+
+    return out;
 }
 
 bool ok(int n, opipe& out, ipipe& in) {
-    ll s = min((ll) n * n * 1000ll, (ll) 9e-4);
-    ll e = min((n + 1) * (n + 1) * 1000ll, (ll) 1e5);
-    ll N = randl(s, e) / 2 * 2;
+    ll s = min((ll) 3e4, n * n * 1000ll);
+    ll e = min((ll) 5e4, (n + 1) * (n + 1) * 1000ll);
+    ll N = randl(s, e);
+    ll SQRT = (ll) ceil(sqrt(N));
+    ll Q = randl(s / 3, e / 3);
 
-    adjl adj(N);
-    if (n < 6) {
-        // random tree (tends to be non solvable)
-        adj = randtree(N);
-    }
-    else {
-        // random solvable
-        adj_edge(adj, 0, 1);
-        for (int i = 1; i < N / 2; ++i) {
-            adj_edge(adj, 2 * i, 2 * i + 1);
-            adj_edge(adj, 2 * i, randl(0, 2 * i));
+    vl start = randvl(N, 0, 1e5);
+    vector<pair<int, pair<ll, ll>>> queries;
+    for (int i = 0; i < Q; ++i) {
+        int type = randl(1, 3);
+        ll x, y;
+        if (type == 1) {
+            if (n == 7) {
+                x = randl(0, N);
+                y = randl(1, SQRT);
+                if (randl(0, 2)) y = -y;
+            }
+            else if (n == 8) {
+                x = randl(0, N);
+                y = randl(SQRT, N);
+                if (randl(0, 2)) y = -y;
+            }
+            else if (n == 9) {
+                x = randl(0, SQRT);
+                y = randl(1, 4);
+            }
+            else {
+                x = randl(0, N);
+                y = randl(1, N);
+                if (randl(0, 2)) y = -y;
+            }
         }
+        else {
+            x = randl(0, N);
+            y = randl(1, 1e5);
+        }
+
+        queries.emplace_back(type, make_pair(x, y));
     }
 
-    // pairs are just random... should improve in future
-    vector<pair<ll, ll>> sisters;
-
-    vl perm = randpl(N);
-    for (int i = 0; i < N / 2; ++i) sisters.emplace_back(perm[2 * i] - 1, perm[2 * i + 1] - 1);
-
-    out << N << '\n';
-    print_adjl(adj, out);
-    for (const auto& sister: sisters) {
-        out << sister.first + 1 << ' ' << sister.second + 1 << '\n';
+    out << N << ' ' << Q << '\n';
+    for (ll s: start) out << s << ' ';
+    out << '\n';
+    for (const auto& q: queries) {
+        out << q.first << ' ' << q.second.first + 1 << ' ' << q.second.second << '\n';
     }
     out.flush();
 
-    ll y_true = solve(adj, sisters);
-    ll y_pred;
-    in >> y_pred;
+    vl ans = solve(start, queries);
+    for (ll sub: ans) {
+        ll cmp;
+        in >> cmp;
+        if (cmp != sub) return false;
+    }
 
-    return y_true == y_pred;
+    return true;
 }

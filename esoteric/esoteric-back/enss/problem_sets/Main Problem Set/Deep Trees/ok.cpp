@@ -57,7 +57,7 @@ ll solve(adjl& adj) {
 }
 
 bool ok(int n, opipe& out, ipipe& in) {
-    ll N = randl(2, 1e5);
+    ll N = randl(3, 1e5);
     adjl adj = randtree(N);
 
     // ensure edge is not duplicate
