@@ -1,6 +1,6 @@
 [kb_limit: 256000]
 [ms_limit: 1000]
-[rating: 330]
+[rating: 340]
 [creation: 2023-08-24T16:00]
 
 Mugs has recently been trying to implement his own version of [quine-relay](https://github.com/mame/quine-relay). In case you don't know, a quine is a program whose output is itself! In the case of quine-relay, the program actually goes through multiple intermediate languages before it finally outputs itself again.

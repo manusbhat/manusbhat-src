@@ -84,12 +84,12 @@ vl solve(vl default_parent, vector<pair<ll, ll>> days) {
 
         if (component[d.first] == d.first) {
             // root
-            component_delta[d.first]--;
+            component_delta[component[d.first]]--;
             sum[d.second]++;
         }
         else if (in_cycle[d.first]) {
             // other edge
-            component_delta[d.first]--;
+            component_delta[component[d.first]]--;
 
             if (pre[d.first] <= pre[d.second] && post[d.second] <= post[d.first]) {
                 // below
@@ -122,16 +122,17 @@ vl solve(vl default_parent, vector<pair<ll, ll>> days) {
     for (int i = 0; i < N; ++i) if (i == component[i]) prefix(i);
 
     vl ret(N);
-    for (int i = 0; i < N; ++i) ret[i] = sum[i] + (D + component_delta[component[i]]) * in_cycle[i];
-
+    for (int i = 0; i < N; ++i) {
+        ret[i] = sum[i] + (D + component_delta[component[i]]) * in_cycle[i];
+    }
     return ret;
 }
+
 
 bool ok(int n, opipe& out, ipipe& in) {
     // TODO: tests cases are terrible for this one..
     ll N = randl(4e4, 5e4);
     ll D = randl(4e4, 5e4);
-
     vl parent;
     // permutation graph
     if (n == 4) {
