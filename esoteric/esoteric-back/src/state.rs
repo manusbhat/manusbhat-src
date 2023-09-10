@@ -18,16 +18,16 @@ pub type SubmissionID = i32;
 pub type TestCaseID = i32;
 
 #[derive(Clone)]
-pub struct AppState {
+pub struct AppState<T = ()> where T: Sync {
     db: Arc<sqlite::SqlitePool>,
     private_key: EncodingKey,
     public_key: DecodingKey,
 
-    /* for libenss only */
-    pub enss_tx: Option<sync::mpsc::Sender<SubmissionID>>
+    // non shared state
+    pub aux: T
 }
 
-impl AppState {
+impl<T: Sync> AppState<T> {
     pub fn db(&self) -> &sqlite::SqlitePool {
         &*self.db
     }
@@ -89,8 +89,8 @@ impl IntoResponse for Error {
     }
 }
 
-impl AppState {
-    pub fn new(db: Arc<sqlite::SqlitePool>) ->  Result<AppState, env::VarError> {
+impl<T: Sync> AppState<T> {
+    pub fn new(db: Arc<sqlite::SqlitePool>, aux: T) ->  Result<AppState<T>, env::VarError> {
         let keyseed = env::var("ESOTERIC_AUTH_KEYSEED").expect("ESOTERIC_AUTH_KEYSEED not set");
 
         let private_key = EncodingKey::from_secret(keyseed.as_bytes());
@@ -100,7 +100,7 @@ impl AppState {
             db,
             private_key,
             public_key,
-            enss_tx: None,
+            aux
         })
     }
 }

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -10,7 +11,9 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use sqlx::migrate::MigrateDatabase;
 use sqlx::{Executor, Sqlite, SqlitePool};
+use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
+use esoteric_back::auth::UserClaim;
 
 
 use esoteric_back::handlers::{stats, status};
@@ -21,10 +24,18 @@ const DATABASE_URL: &str = "sqlite:sync.db";
 const PORT: u16 = 3194;
 
 type UUID = String;
+type Bucket = String;
+type UserID = i32;
+type SyncState = AppState<Arc<Mutex<SlaveMap>>>;
+
+struct SlaveMap {
+    slaves: HashMap<(UUID, Bucket), SlaveToken>
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct SlaveToken {
     token_id: i32,
+    user: UserID,
     container: String
 }
 
@@ -73,21 +84,27 @@ mod nutq {
     }
 }
 //
-// async fn get_slave() -> Result<> {
-//
-// }
-//
-// async fn continue_slave() {
-//
-// }
-//
-// async fn rescind_slave() {
+// async fn try_create_slave(current_hash: i32, user: UserClaim, bucket: String) -> Result<SlaveToken> {
 //
 // }
 
-async fn retrieve(old_version: i32) {
-    // if old_version is latest, just tell them that
+enum DeltaType {
+    Create,
+    Delete
 }
+
+struct Delta {
+    delta_type: DeltaType,
+    path: String
+}
+
+// async fn try_continue_slave(slave: SlaveToken, deltas: Vec<i32>) -> Result<()> {
+//     // if others waiting for the resource, return failure and tell them to wait
+// }
+
+// async fn rescind_slave(slave: SlaveToken) {
+//
+// }
 
 /* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
 #[tokio::main]
@@ -101,7 +118,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
     create_tables(&db).await;
 
-    let state = AppState::new(Arc::new(db))?;
+    let state = AppState::new(Arc::new(db), ())?;
 
     let app = Router::new()
         /* health functions */

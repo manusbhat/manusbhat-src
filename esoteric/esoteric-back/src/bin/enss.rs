@@ -55,6 +55,8 @@ const SUBMISSIONS: &str = "submissions";
 const PROBLEM_SETS: &str = "problem_sets";
 const MAX_FILE_SIZE: usize = 16 * 1024;
 
+type EnssState = AppState<sync::mpsc::Sender<SubmissionID>>;
+
 enum Language {
     GPP,
     Python,
@@ -97,7 +99,7 @@ struct ProblemSetDescriptor {
     name: ProblemSetID
 }
 
-async fn problem_sets(State(handle): State<AppState>)
+async fn problem_sets(State(handle): State<EnssState>)
     -> Result<Json<Vec<ProblemSetDescriptor>>, Error>
 {
     let res: Vec<ProblemSetDescriptor> = sqlx::query_as("SELECT id FROM problem_sets")
@@ -118,7 +120,7 @@ struct ProblemIndex {
     rating: i32,
 }
 
-async fn problems(State(handle): State<AppState>, Path(problem_set): Path<String>)
+async fn problems(State(handle): State<EnssState>, Path(problem_set): Path<String>)
     -> Result<Json<Vec<ProblemIndex>>, Error>
 {
     let res: Vec<ProblemIndex> = sqlx::query_as("
@@ -148,7 +150,7 @@ struct Problem {
     content: String
 }
 
-async fn problem(State(handle): State<AppState>,
+async fn problem(State(handle): State<EnssState>,
                  Path((set, problem)): Path<(ProblemSetID, ProblemID)>)
     -> Result<Json<Problem>, Error>
 {
@@ -191,7 +193,7 @@ struct SubmissionResponse {
     id: SubmissionID
 }
 
-async fn submit(State(handle): State<AppState>,
+async fn submit(State(handle): State<EnssState>,
                 user: UserClaim,
                 Path((_, problem)): Path<(ProblemSetID, ProblemID)>,
                 mut form: Multipart)
@@ -274,7 +276,7 @@ async fn submit(State(handle): State<AppState>,
         .map_err(|_| ServerError("Could not create submission file".to_string()))?;
 
     // start grading server
-    match handle.enss_tx.unwrap().send(id).await {
+    match handle.aux.send(id).await {
         Ok(_) => (),
         Err(_) => return Err(ServerError("Could not send submission to grading server".to_string()))
     }
@@ -318,7 +320,8 @@ struct ResultsMasterResponse {
 }
 
 /* admin only in certain scenarios */
-async fn submission_results(State(handle): State<AppState>,
+#[axum::debug_handler]
+async fn submission_results(State(handle): State<EnssState>,
                             user: UserClaim,
                             Query(query): Query<ResultsQuery>)
     -> Result<Json<ResultsMasterResponse>, Error>
@@ -368,7 +371,7 @@ struct ProblemsetLastResults {
     results: HashMap<ProblemID, SubmissionResult>
 }
 
-async fn problemset_submission_results(State(handle): State<AppState>,
+async fn problemset_submission_results(State(handle): State<EnssState>,
                                        user: UserClaim,
                                        Path(problem_set): Path<ProblemSetID>)
     -> Result<Json<ProblemsetLastResults>, Error>
@@ -409,7 +412,7 @@ async fn problemset_submission_results(State(handle): State<AppState>,
 }
 
 /* file */
-async fn submission(State(handle): State<AppState>, user: UserClaim, Path((_, _, submission_id)): Path<(ProblemSetID, ProblemID, SubmissionID)>)
+async fn submission(State(handle): State<EnssState>, user: UserClaim, Path((_, _, submission_id)): Path<(ProblemSetID, ProblemID, SubmissionID)>)
     -> Result<impl IntoResponse, Error>
 {
     let (language, user_id) = sqlx::query_as("SELECT language, user_id FROM submissions WHERE id = ?")
@@ -456,8 +459,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (tx, rx) = sync::mpsc::channel(1);
     tokio::spawn( execution_thread(executor_db, rx));
 
-    let mut state = AppState::new(db)?;
-    state.enss_tx = Some(tx);
+    let state = EnssState::new(db, tx)?;
 
 
     let app = Router::new()

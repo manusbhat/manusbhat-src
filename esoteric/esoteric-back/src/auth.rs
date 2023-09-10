@@ -1,7 +1,7 @@
 use std::ops::Add;
 use std::time::{Duration, SystemTimeError};
 use axum::{TypedHeader, http::request::Parts, headers::authorization::Bearer, headers::Authorization, extract::FromRequestParts, async_trait, RequestPartsExt};
-use jsonwebtoken::{decode, Validation};
+use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use crate::state::{AppState, Error};
 
@@ -32,7 +32,7 @@ pub struct AdminServerClaim {
 
 /* comes from client, although originally signed by server */
 #[derive(Debug)]
-pub struct AdminClientClaim<const L: i64 = 0>{
+pub struct AdminClientClaim<const L: i64 = 0> {
     id: i64,
     access: i64,
     token_type: String,
@@ -88,17 +88,17 @@ impl<const L: i64> AdminClientClaim<L> {
 
 /* https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
 #[async_trait]
-impl<const L: i64> FromRequestParts<AppState> for AdminClientClaim<L> {
+impl<const L: i64, T: Sync> FromRequestParts<AppState<T>> for AdminClientClaim<L> {
     type Rejection = Error;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &AppState) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &AppState<T>) -> Result<Self, Self::Rejection> {
         let TypedHeader(Authorization(bearer)) = parts
             .extract::<TypedHeader<Authorization<Bearer>>>()
             .await
             .map_err(|_| Error::InvalidToken())?;
 
         // Decode the user data into a server claim
-        let token_data = decode::<AdminServerClaim>(bearer.token(), _state.public_key(), &Validation::default())
+        let token_data = decode::<AdminServerClaim>(bearer.token(), state.public_key(), &Validation::default())
             .map_err(|_| Error::InvalidToken())?;
 
         // convert the server claim to a client claim

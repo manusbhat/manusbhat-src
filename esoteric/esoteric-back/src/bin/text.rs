@@ -75,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
     create_tables(&db).await;
 
-    let state = AppState::new(Arc::new(db))?;
+    let state = AppState::new(Arc::new(db), ())?;
 
     let app = Router::new()
         .route("/text/", get(tags))

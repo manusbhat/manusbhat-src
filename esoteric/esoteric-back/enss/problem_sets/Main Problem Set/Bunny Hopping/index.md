@@ -38,4 +38,4 @@ For each query of type $1$, output the tastiness of his journey given the starti
 
 In the first query, Mugs starts at $x = 1$ and jumps with a size of $1$. He lands at $x = 1, 2, 3$ and acquires $3 + 3 + 3 = 9$ tastiness. In the third query, Mugs starts at $x = 1$ and jumps with a size of $-2$. He lands at $x = 3, 1$ and acquires $3 + 2 = 5$ tastiness. Note that the juice factor of patch $1$ had been updated to $2$.
 
-Problem Credits: Manu, not very complicated so likely a duplicate.
+Problem Credits: Manu, not very complicated so likely a duplicate. Tested by Jiaming (who also contributed a faster solution).

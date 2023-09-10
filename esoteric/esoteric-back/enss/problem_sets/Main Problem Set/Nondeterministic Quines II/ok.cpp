@@ -133,6 +133,7 @@ bool ok(int n, opipe& out, ipipe& in) {
     // TODO: tests cases are terrible for this one..
     ll N = randl(4e4, 5e4);
     ll D = randl(4e4, 5e4);
+
     vl parent;
     // permutation graph
     if (n == 4) {

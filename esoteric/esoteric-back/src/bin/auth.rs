@@ -173,6 +173,7 @@ struct UserCreateIn {
     access: i64
 }
 
+#[axum::debug_handler]
 async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(user): Json<UserCreateIn>) -> Result<(), Error> {
     if user.username.is_empty() || user.password.is_empty() {
         return Err(InvalidArgument("Username and password should be nonempty".to_string()))
@@ -339,7 +340,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
     create_tables(&db).await;
 
-    let state = AppState::new(Arc::new(db))?;
+    let state = AppState::new(Arc::new(db), ())?;
 
     let app = Router::new()
         .route("/auth/authorize", post(authorize))
