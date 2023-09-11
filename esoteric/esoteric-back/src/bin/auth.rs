@@ -30,6 +30,7 @@ use esoteric_back::{
     state::Error::InvalidArgument
 };
 use esoteric_back::state::UserID;
+use esoteric_back::util::rand_i32;
 
 const DATABASE_URL: &str = "sqlite:auth.db";
 const PORT: u16 = 3192;
@@ -181,7 +182,7 @@ async fn user_create(State(handle): State<AppState>, _: RootAdminClaim, Json(use
 
     /* create with password */
     /* we use i32 to avoid javascript loss of precision */
-    let id = (OsRng::default().next_u64() % (i32::MAX as u64)) as i64;
+    let id = rand_i32(); 
     let salt = SaltString::generate(&mut OsRng);
     let argon = Argon2::default();
     let password_digest = argon.hash_password(user.password.as_bytes(), &salt)

@@ -7,7 +7,8 @@ int init(void) {
 vl solve(ll D, ll K, const vl &p, const vl &r) {
     vl out;
     // can be done in many ways
-    priority_queue<pair<ll, ll>, vector<pair<ll, ll>>, greater<pair<ll, ll>>> cheapest, best_diff;
+    priority_queue<pair<ll, ll>, vector<pair<ll, ll>>, greater<pair<ll, ll>>> cheapest;
+    priority_queue<pair<ll, ll>> best_diff;
     for (int i = 0; i < p.size(); ++i) cheapest.push({p[i], i});
 
     for (int i = 0; i < K; ++i) {
