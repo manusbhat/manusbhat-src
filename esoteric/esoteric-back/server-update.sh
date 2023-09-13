@@ -7,19 +7,12 @@ cd stage/esoteric-back
 cargo build --release 
 cd ..
 
-# reformat stage
+# rearrange stage
 find . -name ".DS_Store" -delete
 
-# enss special
-[ -d enss ] && rm -rf enss
-cp -r esoteric-back/enss .
-
-# text special
-[ -d text ] && rm -rf text
-cp -r esoteric-back/text .
-
 for SERVICE in "${SERVICES[@]}"; do
-    mkdir -p "$SERVICE"
+    [ -d $SERVICE ] && rm -rf $SERVICE
+    cp -r esoteric-back/$SERVICE .
     cp esoteric-back/target/release/esoteric_"$SERVICE" "$SERVICE"
 done
 
@@ -63,6 +56,8 @@ for SERVICE in "${SERVICES[@]}"; do
         mkdir -p $ESOTERIC_ROOT/"$SERVICE"/submissions
     elif [ "$SERVICE" = "text" ]; then
         cp -r stage/text/tags $ESOTERIC_ROOT/text
+    elif [ "$SERVICE" = "sync" ]; then
+        cp stage/sync/notification_private_key.p8 $ESOTERIC_ROOT/sync
     fi
 done
 

@@ -50,11 +50,10 @@ mkdir stage/esoteric-back
 cp esoteric-back/Cargo.toml stage/esoteric-back
 cp -r esoteric-back/src stage/esoteric-back
 
-# enss special
-cp -r esoteric-back/enss stage/esoteric-back
-
-# text special
-cp -r esoteric-back/text stage/esoteric-back
+# special libs
+for SERVICE in "${SERVICES[@]}"; do
+    cp -r esoteric-back/$SERVICE stage/esoteric-back
+done
 
 #front 
 mv esoteric-front/build stage/static

@@ -30,6 +30,8 @@ for SERVICE in "${SERVICES[@]}"; do
         rm -rf local/text/tags
 
         cp -r esoteric-back/text/tags local/text
+    elif [ "$SERVICE" = "sync" ]; then
+        cp esoteric-back/sync/notification_private_key.p8 local/sync
     fi
 done
 

@@ -25,6 +25,14 @@ server {
 		proxy_pass http://localhost:3193;
 	}
 
+    location /sync/slave {
+        proxy_pass http://localhost:3194;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+    }
+
 	location /sync {
 		proxy_pass http://localhost:3194;
 	}

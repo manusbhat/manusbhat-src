@@ -25,8 +25,9 @@ path = "src/bin/enss.rs"
 
 [dependencies]
 a2 = "0.7.1"
+apns2 = "0.1.0"
 argon2 = "0.5.1" 
-axum = { version = "0.6.19", features = ["headers", "macros", "multipart"] }
+axum = { version = "0.6.19", features = ["headers", "macros", "multipart", "ws"] }
 chrono = { version = "0.4.26", features = ["serde", "rustc-serialize"] }
 jsonwebtoken = "8.3.0"
 rand_core = { version = "0.6.4", features = ["std"] }
