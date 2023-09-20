@@ -6,7 +6,7 @@
  */
 
 .body-theme-light {
-  --bg: #EEE;
+  --bg: #FFF;
   --bg-alpha: rgba(238, 238, 238, 0.85);
   --ui: hsla(218, 100%, 13%, 0.7);
   --ui-baked: #485774;
@@ -105,7 +105,7 @@ section {
   box-shadow: 0px 0px 1px 0.2px #000000;
 }
 
-h1 {
+main > h1 {
   font-family: var(--bold);
   font-size: 60px;
   color: #333;

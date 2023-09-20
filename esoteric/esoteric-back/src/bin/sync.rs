@@ -1,85 +1,582 @@
 use std::collections::{HashMap};
-use std::fs;
+use std::{env, fs};
+use std::fs::File;
 use std::net::SocketAddr;
 use std::sync::{Arc};
+use a2::{Client, Endpoint};
 
-use axum::{routing::{get, delete}, Router, Json};
+use axum::{routing::{get, delete, put, post}, Router, Json};
 use axum::extract::{Path, State, WebSocketUpgrade};
 use axum::extract::ws::{Message, WebSocket};
 use axum::response::IntoResponse;
 use serde::{Deserialize, Serialize};
 use sqlx::migrate::MigrateDatabase;
-use sqlx::{Sqlite, SqlitePool};
-use tokio::sync::{mpsc, Mutex, oneshot};
+use sqlx::{Executor, Sqlite, SqlitePool};
+use tokio::sync::{Mutex, oneshot};
 use tower_http::trace::TraceLayer;
+use futures::{sink::SinkExt, stream::StreamExt};
 use esoteric_back::auth::UserClaim;
 
 use esoteric_back::handlers::{stats, status};
 use esoteric_back::logging::init_log;
 use esoteric_back::state::{AppState, Error, UserID};
-use esoteric_back::util::rand_i32;
 
 const DATABASE_URL: &str = "sqlite:sync.db";
 const PORT: u16 = 3194;
 
-const SLAVE_TOKEN_EXPIRATION_SECONDS: i32 = 20;
-
-const NUTQ_BUCKET: &str = "nutq";
-
 type UUID = String;
-type Nonce = i32;
 type Bucket = String;
-type Slaves = HashMap<(UserID, Bucket), oneshot::Sender<()>>;
-type SyncState = AppState<Arc<Mutex<Slaves>>>;
+type Slaves = HashMap<(UserID, Bucket), Option<oneshot::Sender<()>>>;
+
+pub struct SingleThreadSyncState {
+    slaves: Slaves,
+    apns: Client,
+
+    nutq_interrupt: tokio::sync::mpsc::Sender<()>,
+    nutq_queue: nutq::NotificationQueue
+}
+
+pub type SyncState = AppState<Arc<Mutex<SingleThreadSyncState>>>;
 
 mod nutq {
+    use std::cmp::max;
+    use std::collections::{HashMap, HashSet};
+    use a2::{DefaultNotificationBuilder, NotificationBuilder, NotificationOptions};
+    use a2::Priority::High;
+    use axum::extract::{Path, State};
+    use axum::Json;
+    use chrono::{DateTime, Duration, Local, LocalResult, TimeZone, Utc};
+    use serde::{Deserializer, Serializer};
+    use tokio::fs;
+    use tokio::time::sleep;
+    use esoteric_back::auth::UserClaim;
+    use esoteric_back::state::{Error, UserID};
+    use crate::{SyncState, UUID};
     use super::{Serialize, Deserialize};
+
+    pub(crate) const NUTQ_BUCKET: &str = "nutq";
+    const NUTQ_IDENTIFIER: &str = "com.enigmadux.nutqdarwin";
+    const NUTQ_MAIN_CATEGORY: &str = "nutq-reminder";
+
+    const FUTURE_DURATION_DAYS: i64 = 7;
+    const PAST_NOTIF_LOOKBACK: i64 = 60;
+    const QUICK_UPDATE_TIMEOUT: i64 = 60;
+    const REMINDER_OFFSET: i64 = 0;
+    const EVENT_OFFSET: i64 = 60 * -10; // -10 minutes
+    const ASSIGNMENT_OFFSET: i64 = 3600 * -2; // -2 hours
+    const ENDING_MAXIMUM: i64 = 3600; // 10 minutes after the actual end
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct BlockRepeat {
+        blocks: i32,
+        remainders: Vec<i32>,
+        modulus: i32,
+        block_unit: f64
+    }
+
+    // makes serde easier..
+    #[derive(Debug, Serialize, Deserialize)]
+    struct IdentityHolder { }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct BlockHolder { block: BlockRepeat }
 
     #[derive(Debug, Serialize, Deserialize)]
     enum SchemeRepeat {
-        None,
-        Block(i32),
+        None(IdentityHolder),
+        Block(BlockHolder),
     }
 
     #[derive(Debug, Serialize, Deserialize)]
-    struct SchemeState {
-        id: super::UUID,
+    struct SchemeSingularState {
+        progress: i32,
+        delay: f64
+    }
 
-        state: Vec<i32>,
-        text: String,
+    const SWIFT_SERIALIZATION_OFFSET: i64 = 978307200;
+    // swift keeps on overriding user setting and giving seconds since 2001.. (978307200 seconds)
+    fn deserialize_unix_timestamp<'de, D>(deserializer: D) -> Result<Option<DateTime<Local>>, D::Error>
+        where D: Deserializer<'de>,
+    {
+        let timestamp: f64 = match Option::deserialize(deserializer) {
+            Ok(None) => return Ok(None),
+            Ok(Some(time)) => time,
+            Err(e) => return Err(e)
+        };
 
-        // start: Option<Date>,
-        // end: Option<Date>,
+        // don't really care about nsecs
+        match Local.timestamp_opt( SWIFT_SERIALIZATION_OFFSET + timestamp as i64, 0) {
+            LocalResult::Single(res) => Ok(Some(res)),
+            _ => Ok(None)
+        }
+    }
 
-        repeat: SchemeRepeat,
+    fn serialize_unix_timestamp<S>(datetime: &Option<DateTime<Local>>, serializer: S)
+        -> Result<S::Ok, S::Error> where S: Serializer
+    {
+        match datetime {
+            Some(dt) => {
+                let timestamp = (dt.timestamp() - SWIFT_SERIALIZATION_OFFSET) as f64;
 
-        indentation: i32
+                timestamp.serialize(serializer)
+            }
+            None => None::<f64>.serialize(serializer), // Serialize as JSON null
+        }
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct SchemeItem {
-        id: super::UUID,
+        id: UUID,
+
+        state: Vec<SchemeSingularState>,
+        text: String,
+
+        // local is pacific (hosted in fremont), which is generally what i want
+        // however, if i'm ever travelling, this may cause problems...
+
+        #[serde(deserialize_with = "deserialize_unix_timestamp", serialize_with="serialize_unix_timestamp")]
+        start: Option<DateTime<Local>>,
+        #[serde(deserialize_with = "deserialize_unix_timestamp", serialize_with="serialize_unix_timestamp")]
+        end: Option<DateTime<Local>>,
+
+        repeats: SchemeRepeat,
+
+        indentation: i32
+    }
+
+    fn dst_add(base: DateTime<Local>, duration: Duration) -> DateTime<Local> {
+        let std = base + duration;
+        let old = base.offset().local_minus_utc();
+        let new = std.offset().local_minus_utc();
+
+        return std + Duration::seconds((old - new) as i64);
+    }
+
+    impl SchemeItem {
+
+        fn notifications(&self,
+                         dump: &mut Vec<Notification>,
+                         user: UserID,
+                         scheme: &UUID,
+                         scheme_title: &str
+        )  {
+            if self.start == None && self.end == None {
+                return
+            }
+
+            // todo: don't assume we're in pacific all the time
+            // also, we kind of assume a lot of stuff... (such as only assuming day repeats)
+
+            for (i, state) in self.state.iter().enumerate() {
+                if state.progress == -1 {
+                    continue
+                }
+
+                let base_offset = match &self.repeats {
+                    SchemeRepeat::Block(BlockHolder { block} ) => {
+                        let m = block.remainders.len();
+                        let seconds= (block.block_unit as i32) * (i as i32 / m as i32 * block.modulus + block.remainders[i % m]);
+
+                        Duration::seconds(seconds as i64)
+                    },
+                    SchemeRepeat::None(_) => Duration::seconds(0)
+                };
+
+                let delay_offset = Duration::seconds(state.delay as i64);
+
+                let (start, end, time) =
+                    match (self.start, self.end) {
+                        (Some(start), Some(end)) =>
+                            (Some(dst_add(start.clone(), base_offset)), Some(dst_add(end, base_offset)),
+                             dst_add(start, base_offset + delay_offset + Duration::seconds(EVENT_OFFSET))),
+                        (Some(start), None) =>
+                            (Some(dst_add(start.clone(), base_offset)), None,
+                             dst_add(start, base_offset + delay_offset + Duration::seconds(REMINDER_OFFSET))),
+                        (None, Some(end)) =>
+                            (None, Some(dst_add(end.clone(), base_offset)),
+                             dst_add(end, base_offset + delay_offset + Duration::seconds(ASSIGNMENT_OFFSET))),
+                        _ => continue
+                    };
+
+                if time >= Local::now() - Duration::seconds(PAST_NOTIF_LOOKBACK) {
+                    dump.push(Notification {
+                        user,
+                        scheme: scheme.to_string(),
+                        scheme_title: scheme_title.to_string(),
+                        item: self.id.clone(),
+                        item_title: self.text.clone(),
+                        index: i as i32,
+                        start,
+                        end,
+                        delay_nonce: delay_offset.num_seconds(),
+                        dispatch_time: time
+                    });
+                }
+            }
+        }
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct SchemeList {
+        schemes: Vec<SchemeItem>
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Scheme {
+        id: UUID,
 
         name: String,
         syncs_to_gsync: bool,
         color_index: i32,
 
-        schemes: Vec<SchemeItem>
+        scheme_list: SchemeList
     }
 
-    // nutq needs special functions
-    pub async fn on_master_update(json: &serde_json::Value) {
-        // based on json
+    impl Scheme {
+        fn notifications(&self, dump: &mut Vec<Notification>, user: UserID)  {
+            for item in self.scheme_list.schemes.iter() {
+                item.notifications(dump, user, &self.id, &self.name);
+            }
+        }
     }
 
-    async fn handle_notifications() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct SchemeHandle {
+        schemes: Vec<Scheme>
+    }
 
+    impl SchemeHandle {
+        fn notifications(&self, user: UserID) -> Vec<Notification> {
+            // last thing and we're done!!
+            let mut ret = Vec::new();
+            for scheme in self.schemes.iter() {
+                scheme.notifications(&mut ret, user);
+            }
+
+            ret
+        }
+
+        fn state_for(&mut self, scheme: UUID, item: UUID, index: usize)
+            -> Option<&mut SchemeSingularState> {
+            return self.schemes.iter_mut()
+                .find(|test_scheme| test_scheme.id == scheme)
+                .and_then(|scheme| scheme.scheme_list.schemes
+                    .iter_mut()
+                    .find(|test_item| test_item.id == item)
+                )
+                .and_then(|item| item.state.get_mut(index));
+        }
+    }
+
+    #[derive(Debug, Clone, Hash, Eq, PartialEq)]
+    pub(crate) struct Notification {
+        user: UserID,
+
+        scheme: UUID,
+        scheme_title: String,
+
+        item: UUID,
+        item_title: String,
+
+        index: i32,
+        start: Option<DateTime<Local>>,
+        end: Option<DateTime<Local>>,
+
+        delay_nonce: i64,
+        dispatch_time: DateTime<Local>,
+    }
+
+    pub(crate) struct NotificationQueue {
+        user_queues: HashMap<UserID, Vec<Notification>>,
+        finished: HashSet<Notification>
+    }
+
+    impl NotificationQueue {
+        fn next(&self) -> Option<Notification> {
+            let mut best: Option<&Notification> = None;
+            for (_, q) in self.user_queues.iter() {
+                for n in q.iter() {
+                    if (best.is_none() || n.dispatch_time < best.unwrap().dispatch_time)
+                        && !self.finished.contains(n) {
+                        best = Some(n)
+                    }
+                }
+            }
+
+            return best.cloned();
+        }
+
+        fn del(&mut self, notif: Notification) {
+            self.finished.insert(notif);
+        }
+
+        pub(crate) fn new() -> Self {
+            Self {
+                user_queues: HashMap::new(),
+                finished: HashSet::new()
+            }
+        }
+    }
+
+    fn notif_content(notif: &Notification) -> String {
+        let long = "%B %d, %H:%M";
+        let short = "%H:%M";
+        let now = Local::now().date_naive();
+
+        match (notif.start, notif.end) {
+            (Some(start), Some(end)) => {
+                format!("{} \u{2192} {}", start.format(if start.date_naive() == now { short } else { long }), end.format(short))
+            },
+            (Some(start), None) => {
+                format!("{} \u{2192}", start.format(if start.date_naive() == now { short } else { long}))
+            },
+            (None, Some(end)) => {
+                format!("\u{2192} {}", end.format(if end.date_naive() == now { short } else { long}))
+            },
+            _ => "None".to_string()
+        }
+    }
+
+    #[derive(Debug, Serialize)]
+    struct SchemePath {
+        scheme_id: UUID,
+        item_id: UUID,
+        index: usize
+    }
+
+    #[derive(Debug, Serialize)]
+    struct DateHolder {
+        #[serde(deserialize_with = "deserialize_unix_timestamp", serialize_with="serialize_unix_timestamp")]
+        dispatch_time: Option<DateTime<Local>>
+    }
+
+    async fn notify_user(state: &SyncState, notification: Notification) -> Result<(), ()> {
+
+        let device_ids: Vec<(String,)> = sqlx::query_as("SELECT device_id FROM devices WHERE user_id = ?")
+            .bind(notification.user)
+            .fetch_all(state.db())
+            .await
+            .map_err(|_| ())?;
+
+        let title = format!("{} [{}]", notification.item_title, notification.scheme_title);
+        let content = notif_content(&notification);
+
+        let path = SchemePath {
+            scheme_id: notification.scheme.clone(),
+            item_id: notification.item.clone(),
+            index: notification.index as usize
+        };
+
+        let time = DateHolder {
+            dispatch_time: Some(Local::now())
+        };
+
+        for (id, ) in device_ids {
+            let options = NotificationOptions {
+                apns_topic: Some(NUTQ_IDENTIFIER),
+                apns_expiration: notification.end.map(|e| (e.timestamp() + ENDING_MAXIMUM) as u64),
+                apns_priority: Some(High),
+                ..Default::default()
+            };
+
+            let builder = DefaultNotificationBuilder::new()
+                .set_category(NUTQ_MAIN_CATEGORY)
+                .set_sound("ping")
+                .set_title(&title)
+                .set_body(&content)
+                .set_loc_args(&["Test"]);
+
+
+            let mut payload = builder.build(&id, options);
+
+            payload.add_custom_data("nutq_path", &path)
+                .unwrap();
+
+            payload.add_custom_data("nutq_time", &time)
+                .unwrap();
+
+            let state_lock = state.aux.lock().await;
+            match state_lock.apns.send(payload).await {
+                Err(_) => {
+                    state.aux.lock().await.nutq_queue.del(notification.clone());
+                    Err(())
+                }
+                _ => Ok(())
+            }?;
+        }
+
+        state.aux.lock().await.nutq_queue.del(notification);
+
+        Ok(())
+    }
+
+    async fn load_handle(user: UserID) -> Option<SchemeHandle> {
+        fs::read_to_string(format!("./buckets/{}/{}.json", NUTQ_BUCKET, user)).await
+            .ok()
+            .and_then(|str| serde_json::from_str(&str).ok())
+    }
+
+    async fn save_handle(user: UserID, handle: &SchemeHandle) {
+        if let Ok(str) = serde_json::to_string(handle) {
+            let _ = fs::write(format!("./buckets/{}/{}.json", NUTQ_BUCKET, user), str).await;
+        }
+    }
+
+    async fn startup(state: &SyncState) -> Result<(), ()> {
+        // initialize notification queues
+        let users: Vec<UserID> = sqlx::query_as("SELECT DISTINCT user_id FROM devices")
+            .fetch_all(state.db()).await
+            .map_err(|_| ())?
+            .into_iter()
+            .map(|(id, )| id)
+            .collect();
+
+        for user in users {
+            if let Some(handle) = load_handle(user).await {
+                state.aux.lock().await
+                    .nutq_queue.user_queues.insert(user, handle.notifications(user));
+            }
+        }
+
+        Ok(())
+    }
+
+    pub async fn notification_dispatch(state: SyncState, mut interrupt_rx: tokio::sync::mpsc::Receiver<()>) {
+        startup(&state).await.expect("Could not start up notification dispatch");
+
+        // either wait for interrupt, or wait for reminder event
+        loop {
+            let top = state.aux.lock().await.nutq_queue.next();
+            let next_notif_time = top.as_ref()
+                .map(|n| n.dispatch_time)
+                .unwrap_or(Local::now() + Duration::days(FUTURE_DURATION_DAYS));
+
+
+            // either wait till the next notification, or theres been a chnage to the notification queueut
+            tokio::select! {
+                _ = interrupt_rx.recv() => {
+                    // special case where we essentially skipped over the last notification
+                    // so we need to dispatch it now
+                    if Utc::now() > next_notif_time {
+                        if let Some(notif) = top {
+                            match notify_user(&state, notif).await {
+                                Err(_) => println!("Failed to notify user"),
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+
+                // we don't really care about if it's off by one second or not
+                _ = tokio::time::sleep(
+                    tokio::time::Duration::from_secs(max(0, (next_notif_time - Local::now()).num_seconds()) as u64)
+                ) => {
+                    if let Some(notif) = top {
+                        // dispatch reminder
+                        match notify_user(&state, notif).await {
+                            Err(_) => println!("Failed to notify user"),
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub async fn interrupt(state: &SyncState, json: &serde_json::Value, user_id: UserID) -> Result<(), ()> {
+        // recreate new list of notifications
+        let schemes: SchemeHandle = serde_json::from_value(json.clone())
+            .map_err(|_| ())?;
+
+        let mut lock = state.aux.lock().await;
+
+        lock.nutq_queue.user_queues.insert(user_id, schemes.notifications(user_id));
+
+        lock.nutq_interrupt.send(()).await
+            .map_err(|_| ())
+    }
+
+    async fn wait_for_empty_slave(state: &SyncState, user: UserID) -> Result<(), ()> {
+        for _ in 0 .. QUICK_UPDATE_TIMEOUT {
+            if !state.aux.lock().await.slaves.contains_key(&(user, NUTQ_BUCKET.to_string())) {
+                return Ok(())
+            }
+
+            sleep(tokio::time::Duration::from_secs(1)).await
+        }
+
+        Err(())
+    }
+
+    async fn reminder_quick_helper(state: State<SyncState>,
+                                   user: UserClaim,
+                                   (scheme, item, index): (UUID, UUID, usize),
+                                   func: impl FnOnce(&mut SchemeSingularState) + Send + Sync + 'static,
+                                   interrupt: bool
+    ) -> Result<(), Error> {
+        // not the greatest thing ever, but basically just terminate the scheme, then we'll
+        // update the results ourselves
+        // really only inefficient due because of the entire recache on client side, but thats a general
+        // problem anyways
+        let id = user.id();
+
+        super::kill_slave(state.clone(), user, Path(NUTQ_BUCKET.to_string())).await?;
+
+        let State(inner_state) = state;
+
+        tokio::spawn(async move {
+            match wait_for_empty_slave(&inner_state, id).await {
+                Err(_) => return,
+                _ => {}
+            }
+
+            // load
+            let handle = load_handle(id).await;
+
+            // modify and save
+            if let Some(mut handle) = handle {
+                if let Some(state) = handle.state_for(scheme, item, index) {
+                    func(state);
+
+                    save_handle(id, &handle).await;
+                }
+
+                if interrupt {
+                    let mut lock = inner_state.aux.lock().await;
+                    lock.nutq_queue.user_queues.insert(id, handle.notifications(id));
+
+                    let _ = lock.nutq_interrupt.send(()).await;
+                }
+            }
+        });
+
+        Ok(())
+    }
+
+
+    pub async fn remind_later(state: State<SyncState>,
+                              user: UserClaim,
+                              Path(path): Path<(UUID, UUID, usize)>,
+                              Json(delay_seconds): Json<f64>
+    ) -> Result<(), Error> {
+        reminder_quick_helper(state, user, path, move |handle| {
+            handle.delay += delay_seconds
+        }, true).await
+    }
+
+    pub async fn complete(state: State<SyncState>,
+                          user: UserClaim,
+                          Path(path): Path<(UUID, UUID, usize)>
+    ) -> Result<(), Error> {
+        reminder_quick_helper(state, user, path, |handle| {
+            handle.progress = -1;
+        }, false).await
     }
 }
 
-async fn bucket_dispatch(value: &serde_json::Value, bucket: &str) {
+async fn bucket_dispatch(temp_state: &SyncState, value: &serde_json::Value, bucket: &str, user: UserID) {
     match bucket {
-        NUTQ_BUCKET => nutq::on_master_update(value).await,
+        nutq::NUTQ_BUCKET => { let _ = nutq::interrupt(temp_state, &value, user).await; },
         _ => { }
     }
 }
@@ -109,6 +606,7 @@ fn apply_updates(value: &mut serde_json::Value, deltas: Vec<Delta>) {
                     continue
                 }
             }
+
             else if current.is_object() {
                 if let Some(str) = path.as_str() {
                     current = current.get_mut(str).unwrap();
@@ -152,8 +650,8 @@ async fn slave_connection(mut socket: WebSocket, State(state): State<SyncState>,
     // cancel if already connected
     // should probably be done with raii
     // but thats a bit hard to work with tokio (mainly cause of the async lock)
-    let mut slaves = state.aux.lock().await;
-    if slaves.contains_key(&(user.id(), bucket.clone())) {
+    let mut state_guard = state.aux.lock().await;
+    if state_guard.slaves.contains_key(&(user.id(), bucket.clone())) {
         match socket.send(Message::Text("\"Resource in Use\"".to_string())).await {
             Ok(_) => { }
             Err(_) => { return; }
@@ -163,8 +661,8 @@ async fn slave_connection(mut socket: WebSocket, State(state): State<SyncState>,
     }
 
     let (kill_tx, kill_rx) = oneshot::channel();
-    slaves.insert((user.id(), bucket.clone()), kill_tx);
-    drop(slaves);
+    state_guard.slaves.insert((user.id(), bucket.clone()), Some(kill_tx));
+    drop(state_guard);
 
     let file_contents = fs::read_to_string(format!("./buckets/{}/{}.json", bucket, user.id()))
         .unwrap_or_else(|_| {
@@ -188,52 +686,56 @@ async fn slave_connection(mut socket: WebSocket, State(state): State<SyncState>,
         Err(_) => true
     };
 
+    let (mut socket_tx, mut socket_rx) = socket.split();
+
     // keep receiving updates (once socket is closed by either us or someone else, we exit the connection)
-    tokio::select! {
-        _ = async {
-            while !skip {
-                match socket.recv().await {
-                    Some(Ok(Message::Text(msg))) => {
-                        let cont: serde_json::error::Result<Vec<Delta>> = serde_json::from_str(&msg);
-                        match cont {
-                            Ok(cont) => {
-                                apply_updates(&mut json_value, cont);
-                                bucket_dispatch(&json_value, &bucket).await;
-                                fs::write(format!("./buckets/{}/{}.json", bucket, user.id()), json_value.to_string())
-                                    .expect("Error writing file");
-                            }
-                            Err(_) => { }
-                        }
+    tokio::spawn(async move {
+        match kill_rx.await {
+            Ok(_) => {
+                socket_tx.send(Message::Text("\"Slave stolen\"".to_string())).await
+                    .expect("Error sending close message");
+            }
+            Err(_) => { }
+        }
+    });
+
+    while !skip {
+        match socket_rx.next().await {
+            Some(Ok(Message::Text(msg))) => {
+                let cont: serde_json::error::Result<Vec<Delta>> = serde_json::from_str(&msg);
+                match cont {
+                    Ok(cont) => {
+                        apply_updates(&mut json_value, cont);
+                        bucket_dispatch(&state, &json_value, &bucket, user.id()).await;
+                        fs::write(format!("./buckets/{}/{}.json", bucket, user.id()), json_value.to_string())
+                            .expect("Error writing file");
                     }
-                    None => { break; }
-                    Some(Err(_)) => { break; }
-                    Some(Ok(Message::Close(_))) => { break; }
-                    _ => continue
+                    Err(_) => { }
                 }
             }
-        } => {},
-        _ = kill_rx => {
-            socket.send(Message::Close(None)).await
-                .expect("Error closing socket");
-        } // if slave was cancelled, exit
+            None => { break; }
+            Some(Err(_)) => { break; }
+            Some(Ok(Message::Close(_))) => { break; }
+            _ => continue
+        }
     }
 
-
     // remove from slaves
-    let mut slaves = state.aux.lock().await;
-    slaves.remove(&(user.id(), bucket));
+    let mut state_guard = state.aux.lock().await;
+    state_guard.slaves.remove(&(user.id(), bucket));
 }
 
 async fn kill_slave(State(state): State<SyncState>, user: UserClaim, Path(bucket): Path<Bucket>) -> Result<(), Error> {
-    let mut slaves = state.aux.lock().await;
-    if let Some(kill_tx) = slaves.remove(&(user.id(), bucket.clone())) {
-        kill_tx.send(()).expect("Error sending kill signal");
-    }
-    else {
-        return Err(Error::InvalidArgument("Slave not found".to_string()));
+    let mut state_guard = state.aux.lock().await;
+    if let Some(slave) = state_guard.slaves.get_mut(&(user.id(), bucket.clone()))
+    {
+        if let Some(inner_tx) = slave.take() {
+            inner_tx.send(()).expect("Error sending kill signal");
+            return Ok(());
+        }
     }
 
-    Ok(())
+    Err(Error::InvalidArgument("Slave not found".to_string()))
 }
 
 // not guaranteed to be absolute latest, but generally good enough
@@ -248,7 +750,18 @@ async fn try_read_bucket(user: UserClaim, Path(bucket): Path<Bucket>)
     Ok(Json(json_value))
 }
 
-/* based off of https://github.com/tokio-rs/axum/blob/main/examples/jwt/src/main.rs */
+async fn register_device(State(state): State<SyncState>, user: UserClaim, Path(device_id): Path<String>)
+    -> Result<(), Error> {
+    sqlx::query("INSERT INTO devices(user_id, device_id) VALUES (?, ?)")
+        .bind(user.id())
+        .bind(device_id)
+        .execute(state.db())
+        .await
+        .map_err(|_| Error::ServerError("Error registering device".to_string()))?;
+
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_log();
@@ -260,9 +773,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
     create_tables(&db).await;
 
+    let mut private_key = File::open("notification_private_key.p8")
+        .expect("Error opening private key");
+
+    let client = Client::token(
+        &mut private_key,
+        env::var("ESOTERIC_NOTIFICATION_KEY_ID").expect("notification key not set"),
+        env::var("ESOTERIC_TEAM_ID").expect("team id not set"),
+        Endpoint::Sandbox).unwrap();
+
     let slaves: Slaves = HashMap::new();
-    let arc_slaves = Arc::new(Mutex::new(slaves));
-    let state = SyncState::new(Arc::new(db), arc_slaves)?;
+    let (nutq_tx, nutq_rx) = tokio::sync::mpsc::channel(1);
+    let arc_state = Arc::new(Mutex::new(SingleThreadSyncState {
+        slaves,
+        apns: client,
+        nutq_interrupt: nutq_tx,
+        nutq_queue: nutq::NotificationQueue::new()
+    }));
+
+    let state = SyncState::new(Arc::new(db), arc_state)?;
+    tokio::spawn(nutq::notification_dispatch(state.clone(), nutq_rx));
 
     let app = Router::new()
         /* health functions */
@@ -272,6 +802,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/sync/slave/:bucket", get(establish_slave))
         .route("/sync/steal/:bucket", delete(kill_slave)) // prob should be slave, but nginx...
         .route("/sync/bucket/:bucket", get(try_read_bucket))
+        .route("/sync/device/:device_id", post(register_device))
+        /* nutq functions */
+        .route("/sync/nutq/complete/:scheme_id/:item_id/:index", put(nutq::complete))
+        .route("/sync/nutq/delay/:scheme_id/:item_id/:index", put(nutq::remind_later))
         .with_state(state)
         .layer(TraceLayer::new_for_http());
 
@@ -287,4 +821,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn create_tables(db: &SqlitePool) {
+    db.execute("
+        CREATE TABLE IF NOT EXISTS
+        devices (
+            device_id STRING PRIMARY_KEY NOT NULL,
+            user_id INTEGER NOT NULL
+        )
+    ").await.expect("Error creating devices table");
 }

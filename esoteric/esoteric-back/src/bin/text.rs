@@ -6,7 +6,6 @@ use std::sync::Arc;
 
 use axum::{routing::{get}, Router, Json};
 use axum::extract::Path;
-use serde::{Serialize};
 use sqlx::{Sqlite, SqlitePool};
 use sqlx::migrate::MigrateDatabase;
 use tower_http::trace::TraceLayer;
@@ -98,6 +97,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
     Ok(())
 }
 
-async fn create_tables(db: &SqlitePool) {
+async fn create_tables(_db: &SqlitePool) {
     // for now just do file io, now db
 }

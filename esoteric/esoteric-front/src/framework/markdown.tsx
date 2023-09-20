@@ -4,7 +4,7 @@ import rehypeKatex from 'rehype-katex'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 
 import 'katex/dist/katex.min.css'
-import { darcula } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { darcula, github, githubGist, xcode } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 function parse_headers(markdown: string) {
     var lines = markdown.split("\n");
@@ -34,7 +34,7 @@ function parse_headers(markdown: string) {
 function Code(props: {children: string[] | string} ) {
 
     return (
-        <SyntaxHighlighter language="javascript" style={darcula}>
+        <SyntaxHighlighter style={githubGist}>
             {props.children}
         </SyntaxHighlighter>
     )

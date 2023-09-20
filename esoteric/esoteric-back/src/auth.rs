@@ -1,7 +1,7 @@
 use std::ops::Add;
 use std::time::{Duration, SystemTimeError};
 use axum::{TypedHeader, http::request::Parts, headers::authorization::Bearer, headers::Authorization, extract::FromRequestParts, async_trait, RequestPartsExt};
-use jsonwebtoken::{decode, DecodingKey, Validation};
+use jsonwebtoken::{decode, Validation};
 use serde::{Deserialize, Serialize};
 use crate::state::{AppState, Error};
 
@@ -15,9 +15,8 @@ pub struct UserCredentials {
 pub const CLAIM_ZERO_ACCESS: i64 =   0i64;
 pub const CLAIM_FULL_ACCESS: i64 = 255i64;
 
-pub const REFRESH_TOKEN_EXPIRATION_SECONDS: Duration = Duration::new(30 * 24 * 60 * 60, 0);
-pub const INTERNAL_TOKEN_EXPIRATION_SECONDS: Duration = Duration::new(30 * 24 * 60 * 60, 0);
-pub const ACCESS_TOKEN_EXPIRATION_SECONDS: Duration = Duration::new(10 * 60, 0);
+pub const REFRESH_TOKEN_EXPIRATION_SECONDS: Duration = Duration::new(120 * 24 * 60 * 60, 0);
+pub const ACCESS_TOKEN_EXPIRATION_SECONDS: Duration = Duration::new(60 * 60, 0);
 
 
 /* direct from server */

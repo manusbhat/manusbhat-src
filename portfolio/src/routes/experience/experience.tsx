@@ -7,7 +7,6 @@
 
 import {StandardTemplate} from "../../framework/template";
 
-import Academics from "./academics";
 import Organizations from "./organizations";
 import Skills from "./skills";
 import Honors from "./honors";

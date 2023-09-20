@@ -94,8 +94,11 @@
     color: #993333;
 }
 
-.tutoring-header h1, h2 {
+.tutoring-header h1, .tutoring-header h2 {
     font-family: var(--comp-prog);
+    text-align: center;
+    font-size: 40px;
+    font-weight: 600;
 }
 
 .tutoring-problem {
@@ -108,15 +111,16 @@
 }
 
 .tutoring-problem-header h1 {
+    font-family: var(--bold);
     font-size: 30px;
-    color: black;
+    color: #333;
     margin: 0px;
 }
 
 .tutoring-problem-header h2 {
     font-size: 20px;
     font-weight: normal ;
-    color: black;
+    color: #333;
 }
 
 .tutoring-problem-header {

@@ -33,8 +33,8 @@ export function Article() {
             <Markdown markdown={markdown} enableHighlights img_base={"/text/static/" + encodeURIComponent(tag!) + "/"}>
                 {(headers, mdown) => 
                     <>
-                        <h1>{strip_md_ext(article!)}</h1>
                         <div className="text-md">
+                            <h1 className="text-md-title">{strip_md_ext(article!)}</h1>
                             {mdown}
                         </div>
                     </>
@@ -61,7 +61,8 @@ export default function Text() {
 
     return (
         <StandardTemplate active='Text' useStreaks={true}>
-            <SkillGroup title="Text" id="Text">
+            <h1>Text</h1>
+            <SkillGroup id="Text">
                 {Object.keys(tags).sort((a, b) => -tags[a].length + tags[b].length).map(tag => 
                     <InlineSkillList key={tag} title={tag}>
                         {tags[tag].map(article => 

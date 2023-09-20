@@ -6,6 +6,15 @@ This website serves two primary roles:
 
 I'll leave the README as that (since you can visit the website to learn more of course).
 
+# Todo
+
+* Deployment is pretty bad right now (ideally make each service have its own script)
+* enss has some weird grading issues with Java, and linux file systems, can improve problems/testcases
+* in some cases assumes trusted user when it probably shouldn't
+* sync is pretty inefficient (particularly bandwidth with acquiring initial token)
+* rust project is pretty messy
+* duplication of frontend code
+
 # Acknowledgements
 
 SVG and PNG icons were sourced from the following locations:

@@ -11,7 +11,7 @@
  import "./skill_list.css"
 import { Link } from "react-router-dom";
 
- function SkillGroup(props: React.PropsWithChildren<{id: string, title: string}>) {
+ function SkillGroup(props: React.PropsWithChildren<{id: string, title?: string}>) {
     return (
         <Section id={props.id} name = {props.title}>
             <div className="skill-group">

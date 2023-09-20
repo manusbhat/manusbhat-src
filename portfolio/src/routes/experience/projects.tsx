@@ -57,12 +57,24 @@ export default function Projects() {
                     year='2020'
                     title='Titan Descent 2'
                     desc=""
-                    size="medium"
+                    size="small"
                     href="https://play.google.com/store/apps/details?id=com.enigmadux.titandescent2&hl=en_US&gl=US"
                     img="/img/titandescent2.webp"
+                    top={`${35 - 20}%`}
+                    left={`${50 - (1 + Math.sqrt(2)) * 20}%`}
+                />
+
+                <Project
+                    year='2023'
+                    title='NutQ Darwin'
+                    desc=""
+                    size="medium"
+                    href="https://github.com/enigmurl/nutq-darwin"
+                    img="/img/nutq.webp"
                     top={`${35 - Math.sqrt(2) * 20}%`}
                     left={`${50 - Math.sqrt(2) * 20}%`}
                 />
+
                 <Project
                     year='2022'
                     title='APCS Website Admin Tool'
@@ -73,6 +85,7 @@ export default function Projects() {
                     top="60%"
                     left="50%"
                 />
+
                 <Project
                     year='2020-ongoing'
                     title='To be published around Q4 2023 😈😈😈😈😈😈😈'
@@ -82,6 +95,7 @@ export default function Projects() {
                     top="20%"
                     left="50%"
                 />
+
                 <Project
                     year='2022-ongoing'
                     title='To be published around 2027 😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈😈'
@@ -91,6 +105,18 @@ export default function Projects() {
                     top="35%"
                     left="10%"
                 />
+
+                <Project
+                    year='2022'
+                    title='Esoteric'
+                    desc=""
+                    size="small"
+                    href='https://esoteric.manubhat.com'
+                    img="/img/esoteric.webp"
+                    top="75%"
+                    left="10%"
+                />
+
                 <Project
                     year='2022'
                     title='DGAN'

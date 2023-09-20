@@ -133,12 +133,12 @@ pub async fn resync(db: &SqlitePool) {
             let open: Option<DateTime<Utc>> = headers
                 .get("open")
                 .and_then(|value| NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M").ok())
-                .map(|naive_datetime| DateTime::from_utc(naive_datetime, Utc));
+                .map(|naive_datetime | DateTime::from_naive_utc_and_offset(naive_datetime, Utc));
 
             let close: Option<DateTime<Utc>> = headers
                 .get("close")
                 .and_then(|value| NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M").ok())
-                .map(|naive_datetime| DateTime::from_utc(naive_datetime, Utc));
+                .map(|naive_datetime| DateTime::from_naive_utc_and_offset(naive_datetime, Utc));
 
             let rating: i32 = headers
                 .get("rating").unwrap_or(&"0".to_string())

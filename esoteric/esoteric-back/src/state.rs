@@ -7,7 +7,6 @@ use axum::response::{IntoResponse, Response};
 use jsonwebtoken::{DecodingKey, EncodingKey};
 use serde_json::json;
 use sqlx::sqlite;
-use tokio::sync;
 
 
 pub type UserID = i64;

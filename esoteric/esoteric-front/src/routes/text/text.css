@@ -1,33 +1,51 @@
 .text-md {
     width: 900px;
     margin: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .text-md h1 {
-    font-size: 30px;
-    margin-top: 80px;
+    font-size: 25px;
+    margin-top: 30px;
+    font-weight: 700;
+}
+
+.text-md-title {
+    font-size: 40px !important;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: solid 0.5px #ccc;
 }
 
 .text-md h2 {
-    font-family: var(--bold);
-    font-size: 25px;
+    font-size: 18px;
+    font-weight: 600;
 }
 
 .text-md img {
-    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    border: solid 0.5px #ccc;
 }
 
+/* mostly from cloudflare's website */
 .text-md p, .text-md li {
-    font-family: var(--comp-prog);
+    font-weight: 400;
+    line-height: 24px;
+    color: #222;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
 }
 .text-md li {
-    font-size: 14px;
     margin: 5px;
 }
 
-.text-md pre {
+.text-md > pre {
     border-radius: 3px;
-    padding: 15px !important;
+    border: solid 0.5px #ccc;
+    padding: 5px !important;
 }
 
 .text-md code {

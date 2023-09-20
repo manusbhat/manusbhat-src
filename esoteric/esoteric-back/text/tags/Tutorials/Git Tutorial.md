@@ -3,7 +3,7 @@
 
 This is a tutorial meant to get you comfortable with Git. See [Git Reference](/text/Man%20Pages/Git%20Reference.md) for a list of idioms and commands.
 
-What is Git? Git is a command line utility used for two (but related) purposes: version control and syncing files between different computers. Git is ubiquitous when it comes to development, though other version control systems do exist. While many IDEs have Git integrations (JetBrains in general does a really great job), I recommend you follow along with the command line to get comfortable with it. Let's get started!
+What is Git? Git is a command line utility used for two important (but related) purposes: version control and syncing files between different computers. Git is ubiquitous when it comes to development, though other version control systems do exist. While many IDEs have Git integrations (JetBrains in general does a really great job), I recommend you follow along with the command line to get comfortable with it. Let's get started!
 
 # Part 0: Accounts
 
@@ -115,6 +115,10 @@ Yay! Our first commit. From here, if we make future modifications, we can add an
 - `git commit`: commit the changes in the staging area to the local repo
 
 Hopefully, you're realizing the merit of git. Your goal when reading this tutorial is to understand why we do things the way we are doing them, and why git is designed the way it is. Moreover, always try to see why we even need a version control system; why go through all this effort; what value does it bring us? This will help you understand the commands and concepts much better.
+
+## Caveats
+
+Some stuff I've said is not entirely correct. For instance, git doesn't actually store diffs the majority of the time. This [blogpost](https://alexwlchan.net/a-plumbers-guide-to-git/) is a pretty good summary of the internals, and I recommend reading for further information. Also, branches don't necessarily point to leaves, but I think that's an easier interpretation coming from a competitive programming perspective.
 
 # Part 2: Remotes, Branches and Merges
 

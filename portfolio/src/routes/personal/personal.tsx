@@ -10,7 +10,7 @@ import {StandardTemplate} from "../../framework/template";
 
 import "./personal.css"
 import Section from "../../framework/section";
-import { InlineSkill, InlineSkillList, SkillGroup } from "../../framework/skill_list";
+import { InlineSkillList, SkillGroup } from "../../framework/skill_list";
 
 
 function Raindrop(props: {desc?: string, img: string}) {
@@ -66,98 +66,6 @@ function Stars() {
     return (
         <SkillGroup id="stars" title="Stars">
             <InlineSkillList title="Ideas">
-                <InlineSkill
-                    name="Homomorphic Encryption"
-                    rating="3"
-                    href="https://en.wikipedia.org/wiki/Homomorphic_encryption"
-                />
-
-                <InlineSkill
-                    name="Duff's Device"
-                    rating="3"
-                    href="https://en.wikipedia.org/wiki/Duff%27s_device"
-                    />
-
-                <InlineSkill
-                    name="Cold Boot Attack" 
-                    rating="3"
-                    href="https://en.wikipedia.org/wiki/Cold_boot_attack" 
-                    />
-
-                <InlineSkill
-                    name="Linear Sum Assignment"
-                    rating="3"
-                    href="http://www.assignmentproblems.com/doc/LSAPIntroduction.pdf" 
-                    /> 
-
-                <InlineSkill
-                    name="Score Matching"
-                    rating="3"
-                    href="https://yang-song.net/blog/2021/score/" 
-                    /> 
-            </InlineSkillList>
-
-            <InlineSkillList title="YouTubers">
-                <InlineSkill
-                    name="3Blue1Brown"
-                    rating="3"
-                    href="https://www.youtube.com/@3blue1brown"
-                />
-
-                <InlineSkill
-                    name="Mugi the Bunny"
-                    rating="3"
-                    href="https://www.youtube.com/@bunny_mugi_channel"
-                />
-
-                <InlineSkill
-                    name="Scott Manley"
-                    rating="3"
-                    href="https://www.youtube.com/@scottmanley"
-                />
-
-                <InlineSkill
-                    name="Sebastian Lague"
-                    rating="3"
-                    href="https://www.youtube.com/@SebastianLague"
-                />
-                
-                <InlineSkill
-                    name="Asianometry"
-                    rating="3"
-                    href="https://www.youtube.com/@Asianometry"
-                />
-                
-                <InlineSkill
-                    name="neo"
-                    rating="3"
-                    href="https://www.youtube.com/@neoexplains"
-                />
-
-                <InlineSkill
-                    name="Stuff Made Here"
-                    rating="3"
-                    href="https://www.youtube.com/@StuffMadeHere"
-                />
-            </InlineSkillList>
-
-            <InlineSkillList title="Websites">
-                <InlineSkill
-                    name="Quanta Magazine"
-                    rating="3"
-                    href="https://www.quantamagazine.org"
-                />
-                <InlineSkill
-                    name="Hacker News"
-                    rating="3"
-                    href="https://news.ycombinator.com/news"
-                />
-
-                <InlineSkill
-                    name="Eliptic Curves"
-                    rating="3"
-                    href="https://curves.xargs.org"
-                    />
             </InlineSkillList>
         </SkillGroup>
     )

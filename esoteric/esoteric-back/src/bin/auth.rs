@@ -9,11 +9,11 @@ use argon2::{
     PasswordVerifier,
     password_hash::SaltString
 };
-use axum::{extract::{FromRequestParts, State}, headers::Authorization, headers::authorization::Bearer, http::request::Parts, Json, RequestPartsExt, Router, TypedHeader, routing::{post, get, put, delete}, async_trait, debug_handler};
+use axum::{extract::{FromRequestParts, State}, headers::Authorization, headers::authorization::Bearer, http::request::Parts, Json, RequestPartsExt, Router, TypedHeader, routing::{post, get, put, delete}, async_trait};
 use axum::extract::Path;
 use serde::{Deserialize, Serialize};
 use jsonwebtoken::{decode, encode, Header, Validation};
-use rand_core::{OsRng, RngCore};
+use rand_core::{OsRng};
 use sqlx::{
     Executor,
     Sqlite,
