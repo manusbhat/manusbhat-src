@@ -57,7 +57,7 @@ for SERVICE in "${SERVICES[@]}"; do
     elif [ "$SERVICE" = "text" ]; then
         cp -r stage/text/tags $ESOTERIC_ROOT/text
     elif [ "$SERVICE" = "sync" ]; then
-        cp stage/sync/notification_private_key.p8 $ESOTERIC_ROOT/sync
+        cp stage/sync/nutqdarwin.json $ESOTERIC_ROOT/sync
     fi
 done
 

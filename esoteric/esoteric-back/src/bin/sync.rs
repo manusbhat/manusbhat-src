@@ -1,14 +1,14 @@
 use std::collections::{HashMap};
 use std::{env, fs};
-use std::fs::File;
 use std::net::SocketAddr;
 use std::sync::{Arc};
-use a2::{Client, Endpoint};
+use std::time::Duration;
 
 use axum::{routing::{get, delete, put, post}, Router, Json};
 use axum::extract::{Path, State, WebSocketUpgrade};
 use axum::extract::ws::{Message, WebSocket};
 use axum::response::IntoResponse;
+use fcm_v1::{auth, Client};
 use serde::{Deserialize, Serialize};
 use sqlx::migrate::MigrateDatabase;
 use sqlx::{Executor, Sqlite, SqlitePool};
@@ -30,7 +30,7 @@ type Slaves = HashMap<(UserID, Bucket), Option<oneshot::Sender<()>>>;
 
 pub struct SingleThreadSyncState {
     slaves: Slaves,
-    apns: Client,
+    fcm: Client,
 
     nutq_interrupt: tokio::sync::mpsc::Sender<()>,
     nutq_queue: nutq::NotificationQueue
@@ -41,12 +41,12 @@ pub type SyncState = AppState<Arc<Mutex<SingleThreadSyncState>>>;
 mod nutq {
     use std::cmp::max;
     use std::collections::{HashMap, HashSet};
-    use a2::{DefaultNotificationBuilder, NotificationBuilder, NotificationOptions};
-    use a2::Priority::High;
     use axum::extract::{Path, State};
-    use axum::Json;
     use chrono::{DateTime, Duration, Local, LocalResult, TimeZone, Utc};
+    use fcm_v1::apns::ApnsConfig;
+    use fcm_v1::message;
     use serde::{Deserializer, Serializer};
+    use serde_json::Value;
     use tokio::fs;
     use tokio::time::sleep;
     use esoteric_back::auth::UserClaim;
@@ -345,6 +345,11 @@ mod nutq {
     }
 
     #[derive(Debug, Serialize)]
+    struct ApsPayload {
+        category: String
+    }
+
+    #[derive(Debug, Serialize)]
     struct DateHolder {
         #[serde(deserialize_with = "deserialize_unix_timestamp", serialize_with="serialize_unix_timestamp")]
         dispatch_time: Option<DateTime<Local>>
@@ -361,51 +366,47 @@ mod nutq {
         let title = format!("{} [{}]", notification.item_title, notification.scheme_title);
         let content = notif_content(&notification);
 
-        let path = SchemePath {
-            scheme_id: notification.scheme.clone(),
-            item_id: notification.item.clone(),
-            index: notification.index as usize
+        let mut path = HashMap::new();
+        path.insert("scheme_id".to_string(), Value::String(notification.scheme.clone()));
+        path.insert("item_id".to_string(), Value::String(notification.item.clone()));
+        path.insert("index".to_string(), Value::String(notification.index.to_string()));
+
+        let aps = ApsPayload {
+            category: NUTQ_MAIN_CATEGORY.to_string()
         };
-
-        let time = DateHolder {
-            dispatch_time: Some(Local::now())
-        };
-
-        for (id, ) in device_ids {
-            let options = NotificationOptions {
-                apns_topic: Some(NUTQ_IDENTIFIER),
-                apns_expiration: notification.end.map(|e| (e.timestamp() + ENDING_MAXIMUM) as u64),
-                apns_priority: Some(High),
-                ..Default::default()
-            };
-
-            let builder = DefaultNotificationBuilder::new()
-                .set_category(NUTQ_MAIN_CATEGORY)
-                .set_sound("ping")
-                .set_title(&title)
-                .set_body(&content)
-                .set_loc_args(&["Test"]);
-
-
-            let mut payload = builder.build(&id, options);
-
-            payload.add_custom_data("nutq_path", &path)
-                .unwrap();
-
-            payload.add_custom_data("nutq_time", &time)
-                .unwrap();
-
-            let state_lock = state.aux.lock().await;
-            match state_lock.apns.send(payload).await {
-                Err(_) => {
-                    state.aux.lock().await.nutq_queue.del(notification.clone());
-                    Err(())
-                }
-                _ => Ok(())
-            }?;
-        }
+        let aps_value: Value = serde_json::to_value(aps).unwrap();
 
         state.aux.lock().await.nutq_queue.del(notification);
+
+        let mut apns = ApnsConfig::default();
+
+        let mut payload = HashMap::new();
+        payload.insert("aps".to_string(), aps_value);
+
+        let mut aps_header = HashMap::new();
+        aps_header.insert("apns-topic".to_string(), Value::String(NUTQ_IDENTIFIER.to_string()));
+        aps_header.insert("apns-priority".to_string(), Value::String("5".to_string()));
+
+        apns.payload = Some(payload);
+        apns.headers = Some(aps_header);
+
+        for (id, ) in device_ids {
+            let mut notification = message::Notification::default();
+            notification.title = Some(title.clone());
+            notification.body = Some(content.clone());
+
+            let mut message = message::Message::default();
+            message.notification = Some(notification);
+            message.token = Some(id);
+            message.apns = Some(apns.clone());
+            message.data = Some(path.clone());
+
+            state.aux.lock().await.fcm.send(&message).await
+                .map_err(|err| {
+                    println!("Err {:?}", err);
+                    ()
+                })?;
+        }
 
         Ok(())
     }
@@ -519,8 +520,11 @@ mod nutq {
         // really only inefficient due because of the entire recache on client side, but thats a general
         // problem anyways
         let id = user.id();
+        let bucket = NUTQ_BUCKET.to_string();
 
-        super::kill_slave(state.clone(), user, Path(NUTQ_BUCKET.to_string())).await?;
+        if state.aux.lock().await.slaves.contains_key(&(id, bucket)) {
+            super::kill_slave(state.clone(), user, Path(NUTQ_BUCKET.to_string())).await?;
+        }
 
         let State(inner_state) = state;
 
@@ -557,10 +561,13 @@ mod nutq {
     pub async fn remind_later(state: State<SyncState>,
                               user: UserClaim,
                               Path(path): Path<(UUID, UUID, usize)>,
-                              Json(delay_seconds): Json<f64>
+                              // Json(new_time): Json<DateHolder>
     ) -> Result<(), Error> {
         reminder_quick_helper(state, user, path, move |handle| {
-            handle.delay += delay_seconds
+            // if let Some(new_time) = new_time.dispatch_time {
+            //     // todo
+            //     handle.delay += 0.0
+            // }
         }, true).await
     }
 
@@ -773,20 +780,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = SqlitePool::connect(DATABASE_URL).await.expect("Error connecting to database");
     create_tables(&db).await;
 
-    let mut private_key = File::open("notification_private_key.p8")
-        .expect("Error opening private key");
+    let creds_path = "./nutqdarwin.json";
+    let project_id = env::var("GOOGLE_PROJECT_ID").unwrap();
 
-    let client = Client::token(
-        &mut private_key,
-        env::var("ESOTERIC_NOTIFICATION_KEY_ID").expect("notification key not set"),
-        env::var("ESOTERIC_TEAM_ID").expect("team id not set"),
-        Endpoint::Sandbox).unwrap();
+    let authenticator = auth::Authenticator::service_account_from_file(creds_path)
+        .await
+        .unwrap();
+
+    let client = Client::new(authenticator, project_id, false, Duration::from_secs(10));
 
     let slaves: Slaves = HashMap::new();
     let (nutq_tx, nutq_rx) = tokio::sync::mpsc::channel(1);
     let arc_state = Arc::new(Mutex::new(SingleThreadSyncState {
         slaves,
-        apns: client,
+        fcm: client,
         nutq_interrupt: nutq_tx,
         nutq_queue: nutq::NotificationQueue::new()
     }));
@@ -824,7 +831,7 @@ async fn create_tables(db: &SqlitePool) {
     db.execute("
         CREATE TABLE IF NOT EXISTS
         devices (
-            device_id STRING PRIMARY_KEY NOT NULL,
+            device_id STRING PRIMARY_KEY NOT NULL UNIQUE,
             user_id INTEGER NOT NULL
         )
     ").await.expect("Error creating devices table");
