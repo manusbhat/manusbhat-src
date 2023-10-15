@@ -48,8 +48,8 @@ Okay great, we have a git repo associated with this project, but now what? Well,
 
 ![Git Trees](git_trees.svg)
 
-## stupid-vcs
-For motivation, let's say you were writing a version control system `stupid-vcs`. A naive implementation might look something like having the working tree (remember: just the project directory and related files) as it is, then whenever we make a significant change, we run `stupid-vcs snapshot`, which would create a full copy of the working directory and save it along with a timestamp. Essentially, `stupid-vcs` is just a smart backup manager. Let's see how we can improve this. 
+## naive-vcs
+For motivation, let's say you were writing a version control system `naive-vcs`. A naive implementation might look something like having the working tree (remember: just the project directory and related files) as it is, then whenever we make a significant change, we run `naive-vcs snapshot`, which would create a full copy of the working directory and save it along with a timestamp. Essentially, `naive-vcs` is just a smart backup manager. Let's see how we can improve this. 
 
 For one, it's wasteful to save an entire copy of the working directory when we're probably only making minor changes between 'snapshots.' Secondly, we might not want our vcs to even care about every single file in our working directory. For example, we might have a `build` folder that contains compiled binaries. A snapshot in a VCS is meant to be the minimal amount of information that encompasses the entire state of the project. Including compiled binaries is redundant, and in some sense is distracting. For similar reasons, we typically may *list* third party dependencies in our VCS, but not actually include the files (which could also be quite large, and thus wasteful to store). 
 
@@ -69,7 +69,7 @@ Anyways, remember the local repo? This is where git will keep track of the diffe
 
 Fundamentally, we could just list out every single file we want included in the commit on a single line. For instance, hypothetically we could have something like (not actual syntax):
 ```bash
-stupid-vcs commit -m "Update PlayerController to allow wasd movement in addition to arrow keys" \
+naive-vcs commit -m "Update PlayerController to allow wasd movement in addition to arrow keys" \
     PlayerController.cpp KeyboardHandler.cpp Player.cpp
 ```
 The problem with this is that there might be a lot more files, and it would get rather confusing to have this all in a single command. Thus, we have a staging area. This essentially just lets us type out the files we want to include in a commit over multiple commands. Once we finish adding all the files, we can then 'flush' the changes by actually committing. The staging area is really just a list of the files (or really, the changes in the files) we want to include in the next commit. The above would get translated into something like this (actual git syntax, but of course we dont' have the files yet, we'll do it on our actual repo in a sec):

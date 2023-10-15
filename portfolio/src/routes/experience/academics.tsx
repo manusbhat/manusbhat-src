@@ -20,10 +20,13 @@ function Academics() {
             <Section id='ucsd' name='Transcript [UCSD]'>
                 <AcademicSchedule summary="UC San Diego 2022 - 2023">
                     <Term title="'23 Fall">
-                        <Course courseName='*courses to be finalized*' grade='?' />
-                        <Course courseName='*courses to be finalized*' grade='?' />
-                        <Course courseName='*courses to be finalized*' grade='?' />
-                        <Course courseName='*courses to be finalized*' grade='?' />
+                        <Course courseName='Advanced Data Structures' courseNum="CSE-100" grade='?' />
+                        <Course courseName='Abstract Algebra' courseNum="MATH-100A" grade='?' />
+                        <Course courseName='Renaissance and Europe' courseNum="HUM-3" grade='?' />
+                        <Course courseName='Components and Circuits' courseNum="ECE-65" grade='?' />
+                        <Course courseName='Differential Equations' courseNum="MATH-20D" grade='?' />
+                        <Course courseName='Direct Group Study (USACO Problem Writing)' courseNum="CSE-198" grade='?' />
+                        <Course courseName='Math Student Colloqium' courseNum="MATH-196" grade='?' />
                     </Term>
 
                     <Term title="'23 Spring">

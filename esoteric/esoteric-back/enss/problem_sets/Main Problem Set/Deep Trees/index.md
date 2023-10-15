@@ -3,7 +3,7 @@
 [rating: 160]
 [creation: 2023-08-14T16:00]
 
-Mugs and Alice are at Wilson Park, where there are $3 \le N \le 10^5$ burrows, connected by $N$ bi-directional tunnels such that every bunnel can be reached from another. What? $N$ tunnels? That's right, $N$ tunnels. Mugs is a bit of a tunnel enthusiast, and he's been working on a tunneling project for the past few years. He's finally finished, and he's ready to show it off to Alice. 
+Mugs and Alice are at Wilson Park, where there are $3 \le N \le 10^5$ burrows, connected by $N$ bi-directional tunnels such that every burrow can be reached from another. What? $N$ tunnels? That's right, $N$ tunnels. Mugs is a bit of a tunnel enthusiast, and he's been working on a tunneling project for the past few years. He's finally finished, and he's ready to show it off to Alice. 
 
 Unfortunately, Alice is more a tree enthusiast and wants to remove one tunnel such that the resultant graph is a tree. Specifically, she wants to remove one tunnel such that the graph is still connected. Moreover, across all possible edges, she must choose the one that forms the deepest tree when rooted at burrow $1$. We claim a tree is deeper than another tree if any of its leaves have a greater distance from the root than all leaves of the other tree. 
 
