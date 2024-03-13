@@ -40,6 +40,7 @@ sl randsl(int n, ll s, ll e) {
 
 vl sltovl(const sl& s) {
     vl v(all(s));
+    sort(v.begin(), v.end());
     return v;
 }
 

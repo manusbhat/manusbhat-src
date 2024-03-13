@@ -75,7 +75,6 @@ vl fast_solve(const vl& s, const vector<pair<int, pair<ll, ll>>>& queries) {
 				ll mod = ind % i;
 				precomp[block][i][mod] += delta;
 			}
-
 			updated_s[patch] = juice;
 		}
 	}

@@ -38,6 +38,10 @@ async fn tags() -> Result<Json<HashMap<TagName, Vec<ArticleName>>>, Error> {
         .filter(|entry| entry.path().is_dir())
         .map(|tag| {
             let dir_name = tag.file_name().to_string_lossy().to_string();
+            if dir_name.starts_with(".") {
+                return (dir_name[1..].to_string(), Vec::new());
+            }
+
             let articles = fs::read_dir(tag.path())
                 .map(|articles| {
                     articles

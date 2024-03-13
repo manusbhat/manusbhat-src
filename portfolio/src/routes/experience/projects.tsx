@@ -88,10 +88,11 @@ export default function Projects() {
 
                 <Project
                     year='2020-ongoing'
-                    title='To be published around Q4 2023 😈😈😈😈😈😈😈'
-                    desc="You'll see soon 😈😈😈😈😈😈😈"
+                    title='Monocurl'
+                    desc="Desktop app for making math videos/slideshows"
+                    href="https://www.monocurl.com/"
                     size="large"
-                    img="/img/secret.webp"
+                    img="/img/monocurl.webp"
                     top="20%"
                     left="50%"
                 />
@@ -107,7 +108,7 @@ export default function Projects() {
                 />
 
                 <Project
-                    year='2022'
+                    year='2023'
                     title='Esoteric'
                     desc=""
                     size="small"

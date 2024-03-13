@@ -6,6 +6,19 @@
 
 Welcome to my competitive programming grading server! All problems are written entirely by me, but some of them are somewhat canonical or take inspiration from other sources. 
 
+**Important**:
+Input is done via stdin and stdout, but do note that due to limitations (with pipe buffers), you cannot intertwine reads and writes (unless problem is explicitly states as interactive). For instance, the following code will time out:
+```cpp
+int n;
+cin >> n;
+for (int i = 0; i < n; ++i) {
+    int x;
+    cin >> x;
+    // bad, reads between writes will cause stalls
+    cout << x;
+}
+```
+
 Here's how the rating system works (it is meant to somewhat follow USACO):
 - 0 to 100: Pre-bronze problems
 - 100 to 200: Bronze problems

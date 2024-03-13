@@ -3,7 +3,7 @@
 [rating: 260]
 [creation: 2023-08-14T16:00]
 
-The bunnies are back at Wilson Park! $1 \le N \le 10^5$ bunnies are placed along $N$ burrows, such that each burrow contains exactly $1$ rabbit and $N$ is even. These burrows are connected by $N - 1$ bidirectional tunnels such that you can reach any burrow from any other burrow.
+$1 \le N \le 10^5$ bunnies are placed along $N$ burrows, such that each burrow contains exactly $1$ rabbit and $N$ is even. These burrows are connected by $N - 1$ bidirectional tunnels such that you can reach any burrow from any other burrow.
 
 Every rabbit has a unique sister rabbit. This property is commutative. That is if rabbit $a$ is the sister of rabbit $b$, then rabbit $b$ is the sister of rabbit $a$. Moreover, no rabbit is the sister of itself. 
 
