@@ -280,7 +280,7 @@ export default function Home() {
 
             <div id="index">
                 <Picture />
-                <AboutMe />
+                {/* <AboutMe /> */}
                 <Recommendations />
                 <Thanks />
                 <Signature />

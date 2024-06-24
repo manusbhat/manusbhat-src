@@ -26,8 +26,8 @@ export default function Honors() {
             />
 
             <Skill
-                name='picoCTF 2023'
-                desc='Top 15% globally. Hoping to improve next year!'
+                name='picoCTF 2024'
+                desc='#2 US Undergrad, #7 Global'
                 img_src="/img/picoctf.webp"
                 href="https://picoctf.org"
             />

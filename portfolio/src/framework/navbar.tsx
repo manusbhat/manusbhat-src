@@ -41,30 +41,30 @@ const routing_dicitionary: RoutingDictionary = {
                 name:"Projects",
                 id:"projects"
             },
-            {
-                name:"Organizations",
-                id:"organizations"
-            },
+            // {
+            //     name:"Organizations",
+            //     id:"organizations"
+            // },
             // {
             //     name:"Academics",
             //     id:"academics"
             // },
-            {
-                name:"Skills",
-                id: "skills"
-            },
+            // {
+            //     name:"Skills",
+            //     id: "skills"
+            // },
             {
                 name:"Honors",
                 id: "honors"
             }
         ]
     },
-    Personal : {
-        href: "/personal",
-        submenu: [
+    // Personal : {
+    //     href: "/personal",
+    //     submenu: [
 
-        ]
-    },
+    //     ]
+    // },
     Contact :   {
         href:"/contact",
         submenu:[
@@ -96,7 +96,7 @@ function Navbar(props: {active: string, setTheme: (theme: Theme) => void}) {
                 <ul id='nav-buttons'>  
                     {/* Listed in right first order */}
                     <Navitem title='Experience' active = {props.active}/>
-                    <Navitem title='Personal' active = {props.active}/>
+                    {/* <Navitem title='Personal' active = {props.active}/> */}
                     <Navitem title='Contact' active = {props.active}/>
                 </ul>
             </span>

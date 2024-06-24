@@ -7,8 +7,6 @@
 
 import {StandardTemplate} from "../../framework/template";
 
-import Organizations from "./organizations";
-import Skills from "./skills";
 import Honors from "./honors";
 import Projects from "./projects";
 import Formal from "./formal";
@@ -25,9 +23,9 @@ function Experience() {
         <StandardTemplate active = 'Experience' useStreaks={true}> 
             <Formal/> 
             <Projects/>
-            <Organizations/>
+            {/* <Organizations/> */}
             {/* <Academics/> */}
-            <Skills/>
+            {/* <Skills/> */}
             <Honors/>
         </StandardTemplate>
     );
